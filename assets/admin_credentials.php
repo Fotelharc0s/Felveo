@@ -1,0 +1,3 @@
+<?php
+$ADMIN_USER = 'admin';
+$ADMIN_HASH = '$2y$10$1WGpXaiNdUUMM3ZKr/pfvevEGDaJiY/DgO4OKsD3JB4PLH6h7p/Tm';

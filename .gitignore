@@ -1,0 +1,16 @@
+# Ignore logs and DB dumps
+*.log
+*.sql
+
+# Ignore local samples folder
+/samples/
+
+# Ignore OS thumbnails/screenshot auto files
+Thumbs.db
+.DS_Store
+
+# Ignore editor temp files
+*.swp
+*.swo
+*.idea/
+.vscode/
