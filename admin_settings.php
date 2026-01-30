@@ -17,6 +17,23 @@ foreach ($all_settings as $setting) {
     $settings[$setting['nev']] = $setting['ertek'];
 }
 
+// Alapértelmezett beállítások, ha nincsenek
+if (!isset($settings['kiirando_adatok'])) {
+    $default_kiirando = json_encode([
+        'oktatasi_azonosito' => true,
+        'nev' => true,
+        'szuletesi_ido' => false,
+        'anyja_neve' => false,
+        'email' => false,
+        'lakcim' => false,
+        'iskola_nev' => false,
+        'iskola_cim' => false,
+        'iskola_varos' => false
+    ]);
+    $pdo->prepare("INSERT INTO beallitasok (nev, ertek) VALUES (?, ?) ON DUPLICATE KEY UPDATE ertek = VALUES(ertek)")->execute(['kiirando_adatok', $default_kiirando]);
+    $settings['kiirando_adatok'] = $default_kiirando;
+}
+
 // Beállítások mentése
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
     try {
@@ -26,10 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
         $max_magyar = $_POST['max_pont_magyar'] ?? 50;
         $max_mate = $_POST['max_pont_matematika'] ?? 50;
         
-        $upd = $pdo->prepare("UPDATE beallitasok SET ertek = ? WHERE nev = ?");
-        $upd->execute([$max_magyar, 'max_pont_magyar_alapertelmezett']);
-        $upd->execute([$max_mate, 'max_pont_matematika_alapertelmezett']);
-        
+        $upd = $pdo->prepare("INSERT INTO beallitasok (nev, ertek) VALUES (?, ?) ON DUPLICATE KEY UPDATE ertek = VALUES(ertek)");
+        $upd->execute(['max_pont_magyar_alapertelmezett', $max_magyar]);
+        $upd->execute(['max_pont_matematika_alapertelmezett', $max_mate]);
+
         // Kiírható adatok
         $output_fields = json_encode([
             'oktatasi_azonosito' => isset($_POST['output_oktatasi_azonosito']),
@@ -42,12 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
             'iskola_cim' => isset($_POST['output_iskola_cim']),
             'iskola_varos' => isset($_POST['output_iskola_varos'])
         ]);
-        
-        $upd->execute([$output_fields, 'kiirando_adatok']);
-        
+
+        $upd->execute(['kiirando_adatok', $output_fields]);
+
         // Tájékoztatás szöveg
         $tajekoztatas = $_POST['tajekoztatas_szoveg'] ?? '';
-        $upd->execute([$tajekoztatas, 'tajekoztatas_szoveg']);
+        $upd->execute(['tajekoztatas_szoveg', $tajekoztatas]);
         
         $pdo->commit();
         $message = '✓ Beállítások sikeresen mentve!';

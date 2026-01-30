@@ -4,22 +4,43 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 $kiirando_adatok = [];
 $tajekoztatas = '';
+$settings = [];
 
 // Beállítások lekérése
 try {
     $settings_stmt = $pdo->query("SELECT nev, ertek FROM beallitasok");
-    $settings = [];
     foreach ($settings_stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $settings[$row['nev']] = $row['ertek'];
     }
-    
-    if (!empty($settings['kiirando_adatok'])) {
-        $kiirando_adatok = json_decode($settings['kiirando_adatok'], true) ?: [];
-    }
-    
+
     $tajekoztatas = $settings['tajekoztatas_szoveg'] ?? 'Üdvözöljük az eredménylekérdezésben! Kérjük, adja meg az oktatási azonosítóját az eredmények megtekintéséhez.';
 } catch (Exception $e) {
     $tajekoztatas = 'Üdvözöljük az eredménylekérdezésben!';
+}
+
+// Alapértelmezett beállítások, ha nincsenek
+if (!isset($settings['kiirando_adatok'])) {
+    $default_kiirando = json_encode([
+        'oktatasi_azonosito' => true,
+        'nev' => true,
+        'szuletesi_ido' => false,
+        'anyja_neve' => false,
+        'email' => false,
+        'lakcim' => false,
+        'iskola_nev' => false,
+        'iskola_cim' => false,
+        'iskola_varos' => false
+    ]);
+    try {
+        $pdo->prepare("INSERT INTO beallitasok (nev, ertek) VALUES (?, ?) ON DUPLICATE KEY UPDATE ertek = VALUES(ertek)")->execute(['kiirando_adatok', $default_kiirando]);
+        $settings['kiirando_adatok'] = $default_kiirando;
+    } catch (Exception $e) {
+        // Ha nem sikerül, marad üres
+    }
+}
+
+if (!empty($settings['kiirando_adatok'])) {
+    $kiirando_adatok = json_decode($settings['kiirando_adatok'], true) ?: [];
 }
 
 // JSON válasz AJAX-hoz

@@ -174,6 +174,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])
                         <p>Még nincsenek feltöltött dolgozataid</p>
                     </div>
                 <?php else: ?>
+                    <?php
+                    // Számoljuk ki az összesített pontokat a dokumentumok alapján (magyar+matematika)
+                    $sumElert = 0;
+                    $sumMax = 0;
+                    foreach ($documents as $dtmp) {
+                        $dmax = $dtmp['targy_id'] == 1 ? ($dtmp['max_pont_magyar'] ?? 50) : ($dtmp['max_pont_matematika'] ?? 50);
+                        $delert = isset($dtmp['elert_pont']) ? (int)$dtmp['elert_pont'] : 0;
+                        $sumElert += $delert;
+                        $sumMax += (int)$dmax;
+                    }
+                    $overallPercent = $sumMax > 0 ? round(($sumElert / $sumMax) * 100) : '-';
+                    ?>
+                    <div class="overall-summary">
+                        <strong>Összesített pontok:</strong>
+                        <span><?php echo $sumElert; ?> / <?php echo $sumMax; ?></span>
+                        <span> — <?php echo $overallPercent !== '-' ? $overallPercent . '%' : '-'; ?></span>
+                    </div>
                     <?php foreach ($documents as $doc): ?>
                         <div class="document-card">
                             <div class="document-header">

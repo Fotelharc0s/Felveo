@@ -288,34 +288,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <thead>
                             <tr>
                                 <th>Tárgy</th>
-                                <th>Max (Magyar)</th>
-                                <th>Max (Matek)</th>
+                                <th>Max pont</th>
                                 <th>Elért pont</th>
                                 <th>Módosítás</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($results as $result): ?>
-                                <tr>
-                                    <form method="POST" class="form-contents">
-                                        <input type="hidden" name="action" value="update_points">
-                                        <input type="hidden" name="eredmeny_id" value="<?php echo $result['id']; ?>">
-                                        <td><?php echo htmlspecialchars($result['targy_nev']); ?></td>
-                                        <td>
-                                            <input type="number" name="max_magyar" value="<?php echo $result['max_pont_magyar']; ?>">
-                                        </td>
-                                        <td>
-                                            <input type="number" name="max_mate" value="<?php echo $result['max_pont_matematika']; ?>">
-                                        </td>
-                                        <td>
-                                            <input type="number" name="pont" value="<?php echo $result['ertek'] ?? ''; ?>">
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn-save-small">Mentés</button>
-                                        </td>
-                                    </form>
-                                </tr>
-                            <?php endforeach; ?>
+                            <?php
+                                $seenTargyak = [];
+                                foreach ($results as $result):
+                                    // Skip duplicate subject rows (sometimes duplicated imports create multiple eredmenyek rows)
+                                    if (in_array($result['targy_id'], $seenTargyak)) continue;
+                                    $seenTargyak[] = $result['targy_id'];
+                            ?>
+                                        <tr>
+                                            <form method="POST" class="form-contents">
+                                                <input type="hidden" name="action" value="update_points">
+                                                <input type="hidden" name="eredmeny_id" value="<?php echo $result['id']; ?>">
+                                                <td><?php echo htmlspecialchars($result['targy_nev']); ?></td>
+                                                <td>
+                                                    <?php if ($result['targy_id'] == 1): ?>
+                                                        <input type="number" name="max_magyar" value="<?php echo $result['max_pont_magyar']; ?>" placeholder="Max magyar">
+                                                    <?php elseif ($result['targy_id'] == 2): ?>
+                                                        <input type="number" name="max_mate" value="<?php echo $result['max_pont_matematika']; ?>" placeholder="Max matek">
+                                                    <?php else: ?>
+                                                        -
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="pont" value="<?php echo $result['ertek'] ?? ''; ?>" placeholder="Elért pont">
+                                                </td>
+                                                <td>
+                                                    <button type="submit" class="btn-save-small">Mentés</button>
+                                                </td>
+                                            </form>
+                                        </tr>
+                                    <?php endforeach; ?>
                         </tbody>
                     </table>
                 <?php endif; ?>
