@@ -20,6 +20,8 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
             <div class="button-group-center">
                 <a href="eredmeny.php" class="primary-btn">Eredmények lekérdezése</a>
+                <a href="student_view.php" class="primary-btn">Dolgozatok megtekintése</a>
+                <a href="admin_login.php" class="primary-btn">Admin bejelentkezés</a>
             </div>
         </div>
     </div>
