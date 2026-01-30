@@ -65,6 +65,11 @@ if ($action === 'edit' && isset($_GET['okt'])) {
     $student_stmt->execute([$okt]);
     $student = $student_stmt->fetch(PDO::FETCH_ASSOC);
     
+    // Összes általános iskola lekérése
+    $iskolas_stmt = $pdo->prepare("SELECT om_azonosito, nev, telepules FROM altalanos_iskolak ORDER BY nev");
+    $iskolas_stmt->execute();
+    $iskolak = $iskolas_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
     // Pontok módosítása
     $results_stmt = $pdo->prepare("
         SELECT 
@@ -92,14 +97,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $nev = $_POST['nev'];
         $szul = $_POST['szuletesi_ido'];
         $anyja = $_POST['anyja_neve'];
+        $lakcim = $_POST['lakcim'] ?? '';
+        $telepules = $_POST['telepules'] ?? '';
+        $iskola_om = $_POST['alt_iskola_om'] ?? '';
         
         try {
             $update_stmt = $pdo->prepare("
                 UPDATE szemelyek 
-                SET nev = ?, szuletesi_ido = ?, anyja_neve = ?
+                SET nev = ?, szuletesi_ido = ?, anyja_neve = ?, lakcim = ?, telepules = ?, alt_iskola_om = ?
                 WHERE oktatasi_azonosito = ?
             ");
-            $update_stmt->execute([$nev, $szul, $anyja, $okt]);
+            $update_stmt->execute([$nev, $szul, $anyja, $lakcim, $telepules, $iskola_om ?: null, $okt]);
             $message = '✓ Diák adatai sikeresen módosítva!';
         } catch (Exception $e) {
             $message = '✗ Hiba: ' . $e->getMessage();
@@ -246,6 +254,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     <div class="form-group">
                         <label>Anya neve:</label>
                         <input type="text" name="anyja_neve" value="<?php echo htmlspecialchars($student['anyja_neve']); ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Lakcím:</label>
+                        <input type="text" name="lakcim" value="<?php echo htmlspecialchars($student['lakcim'] ?? ''); ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Település:</label>
+                        <input type="text" name="telepules" value="<?php echo htmlspecialchars($student['telepules'] ?? ''); ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Általános iskola:</label>
+                        <select name="alt_iskola_om">
+                            <option value="">-- Nincs kiválasztva --</option>
+                            <?php foreach ($iskolak as $iskola): ?>
+                                <option value="<?php echo htmlspecialchars($iskola['om_azonosito']); ?>" <?php echo ($student['alt_iskola_om'] === $iskola['om_azonosito']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($iskola['nev'] . ' (' . $iskola['telepules'] . ')'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     
                     <button type="submit" class="btn-success">💾 Módosítások mentése</button>
