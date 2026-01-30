@@ -27,8 +27,8 @@ if (!isset($_FILES['excel'])) {
 }
 
 $type = isset($_POST['import_type']) ? (string)$_POST['import_type'] : '';
-$files = $_FILES['excel']['tmp_name'];
-if (!is_array($files)) $files = [$files];
+$uploaded = $_FILES['excel'];
+$countFiles = is_array($uploaded['tmp_name']) ? count($uploaded['tmp_name']) : 0;
 
 $strict = isset($_POST['strict']) && ($_POST['strict'] == '1' || $_POST['strict'] === 1);
 
@@ -36,23 +36,116 @@ if (!$type) exit("Nincs kiválasztva import típus.");
 
 $summary = ['files' => [], 'imported' => 0, 'skipped' => 0];
 
-foreach ($files as $file) {
-    if (!is_uploaded_file($file) && !file_exists($file)) {
-        log_msg("Skipping non-uploaded file: $file");
+for ($fi = 0; $fi < $countFiles; $fi++) {
+    $tmp = $uploaded['tmp_name'][$fi];
+    $origName = $uploaded['name'][$fi] ?? '';
+    if (!is_uploaded_file($tmp) && !file_exists($tmp)) {
+        log_msg("Skipping non-uploaded file: $tmp (orig: $origName)");
         continue;
     }
 
+    $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
     try {
-        $spreadsheet = IOFactory::load($file);
+        if ($ext === 'csv') {
+            // Read a sample for encoding/delimiter detection
+            $sample = file_get_contents($tmp, false, null, 0, 20000);
+            if ($sample === false) $sample = '';
+
+                // Respect manual override from form if provided
+                $enc = null;
+                $postedEnc = $_POST['csv_encoding'] ?? 'auto';
+                if ($postedEnc !== 'auto') {
+                    $enc = $postedEnc;
+                    log_msg("CSV manual encoding override for {$origName}: {$enc}");
+                } else {
+                    if (function_exists('mb_detect_encoding')) {
+                        $enc = false;
+                        $candidateEnc = ['UTF-8','CP1250','Windows-1250','ISO-8859-2','ISO-8859-1','ISO-8859-15'];
+                        foreach ($candidateEnc as $cand) {
+                            try {
+                                $res = mb_detect_encoding($sample, $cand, true);
+                            } catch (\Throwable $t) {
+                                // some PHP builds may throw for unknown encoding names; skip
+                                $res = false;
+                            }
+                            if ($res !== false && $res !== null) {
+                                $enc = $res;
+                                break;
+                            }
+                        }
+                    }
+                    if (!$enc) $enc = 'UTF-8';
+                }
+
+            // prepare file to load: convert to UTF-8 if necessary
+            $loadFile = $tmp;
+                if (strtoupper($enc) !== 'UTF-8') {
+                $full = file_get_contents($tmp);
+                if ($full !== false) {
+                    $converted = null;
+                    if (function_exists('mb_convert_encoding')) {
+                        $converted = mb_convert_encoding($full, 'UTF-8', $enc);
+                    }
+                    if ($converted !== null) {
+                        $tmpConv = tempnam(sys_get_temp_dir(), 'csv_');
+                        file_put_contents($tmpConv, $converted);
+                        $loadFile = $tmpConv;
+                            log_msg("CSV converted to UTF-8 for {$origName}: temp file {$tmpConv}, detected encoding={$enc}");
+                    }
+                }
+            }
+
+            // Detect delimiter by sampling first few lines
+            $sampleFull = file_get_contents($tmp, false, null, 0, 20000) ?: '';
+            $lines = preg_split('/\r\n|\n|\r/', $sampleFull);
+            $candidates = [',', ';', "\t", '|'];
+            $postedDelim = $_POST['csv_delimiter'] ?? 'auto';
+            if ($postedDelim !== 'auto') {
+                $best = $postedDelim;
+                log_msg("CSV manual delimiter override for {$origName}: {$best}");
+            } else {
+                $candidates = [',', ';', "\t", '|'];
+                $best = ',';
+                $bestScore = -1;
+                foreach ($candidates as $cand) {
+                    $score = 0; $cnt = 0;
+                    foreach ($lines as $ln) {
+                        $ln = trim($ln);
+                        if ($ln === '') continue;
+                        $score += substr_count($ln, $cand);
+                        $cnt++;
+                        if ($cnt >= 5) break;
+                    }
+                    $avg = $cnt > 0 ? ($score / $cnt) : 0;
+                    if ($avg > $bestScore) { $bestScore = $avg; $best = $cand; }
+                }
+            }
+
+            log_msg("CSV auto-detected for {$origName}: encoding={$enc}, delimiter=" . str_replace("\t","\\t", $best));
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+            $reader->setInputEncoding('UTF-8');
+            $reader->setDelimiter($best);
+            $reader->setEnclosure('"');
+            $reader->setSheetIndex(0);
+            $spreadsheet = $reader->load($loadFile);
+            log_msg("CSV loaded for {$origName} from {$loadFile}");
+
+            // cleanup converted temporary file
+            if (isset($tmpConv) && file_exists($tmpConv)) {
+                @unlink($tmpConv);
+            }
+        } else {
+            $spreadsheet = IOFactory::load($tmp);
+        }
     } catch (Exception $e) {
-        log_msg("Failed to load spreadsheet ($file): " . $e->getMessage());
+        log_msg("Failed to load file ({$origName}): " . $e->getMessage());
         continue;
     }
 
     $sheet = $spreadsheet->getActiveSheet();
     $rows = $sheet->toArray(null, true, true, true);
     if (!is_array($rows) || count($rows) < 2) {
-        log_msg("Empty or invalid Excel file, skipping: $file");
+        log_msg("Empty or invalid file, skipping: {$origName}");
         continue;
     }
 
@@ -65,7 +158,7 @@ foreach ($files as $file) {
         $header[$norm] = $col;
     }
 
-    log_msg("Parsed header for $file: " . json_encode($header, JSON_UNESCAPED_UNICODE));
+    log_msg("Parsed header for {$origName}: " . json_encode($header, JSON_UNESCAPED_UNICODE));
 
     try {
         $pdo->beginTransaction();
@@ -77,10 +170,9 @@ foreach ($files as $file) {
             throw new Exception("Ismeretlen import típus: $type");
         }
         $pdo->commit();
-        $summary['files'][] = ['file' => $file, 'imported' => $count];
+        $summary['files'][] = ['file' => $origName, 'imported' => $count];
         $summary['imported'] += $count;
 
-        // If we just imported eredmenyek, remove duplicate eredmenyek rows (keep lowest id).
         if ($type === 'eredmenyek') {
             try {
                 $delSql = "DELETE e1 FROM eredmenyek e1
@@ -91,14 +183,14 @@ foreach ($files as $file) {
                 $deleted = $pdo->exec($delSql);
                 $deleted = $deleted === false ? 0 : (int)$deleted;
                 $summary['deduped'] = ($summary['deduped'] ?? 0) + $deleted;
-                log_msg("Auto-dedupe after import of $file: deleted $deleted duplicate eredmenyek rows");
+                log_msg("Auto-dedupe after import of {$origName}: deleted $deleted duplicate eredmenyek rows");
             } catch (Exception $e) {
-                log_msg("Auto-dedupe failed after import of $file: " . $e->getMessage());
+                log_msg("Auto-dedupe failed after import of {$origName}: " . $e->getMessage());
             }
         }
     } catch (Exception $e) {
         $pdo->rollBack();
-        log_msg("Error importing $file: " . $e->getMessage());
+        log_msg("Error importing {$origName}: " . $e->getMessage());
     }
 }
 
@@ -130,17 +222,21 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
     $colAnyja = $find($header, 'anyja');
     $colEmail = $find($header, 'email');
     $colLakcim = $find($header, 'lakcim');
+    $colTelepules = $find($header, 'telepules');
+    $colIskolaOm = $find($header, 'iskola') ?? $find($header, 'om');
 
     $stmt = $pdo->prepare(
           "INSERT INTO szemelyek
-                (oktatasi_azonosito, nev, szuletesi_ido, anyja_neve, lakcim, email, jelszo_hash, is_placeholder)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (oktatasi_azonosito, nev, szuletesi_ido, anyja_neve, lakcim, email, telepules, alt_iskola_om, jelszo_hash, is_placeholder)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 nev = VALUES(nev),
                 szuletesi_ido = VALUES(szuletesi_ido),
                 anyja_neve = VALUES(anyja_neve),
                 lakcim = VALUES(lakcim),
                 email = VALUES(email),
+                telepules = VALUES(telepules),
+                alt_iskola_om = VALUES(alt_iskola_om),
                 jelszo_hash = VALUES(jelszo_hash),
                 is_placeholder = VALUES(is_placeholder)"
     );
@@ -162,6 +258,8 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
         $anyja_neve = $colAnyja ? trim($row[$colAnyja] ?? '') : '';
         $email = $colEmail ? trim($row[$colEmail] ?? '') : '';
         $lakcim = $colLakcim ? trim($row[$colLakcim] ?? '') : '';
+        $telepules = $colTelepules ? trim($row[$colTelepules] ?? '') : '';
+        $iskola_om = $colIskolaOm ? trim($row[$colIskolaOm] ?? '') : '';
 
         // ensure unique, non-empty email so UNIQUE index doesn't collide
         if ($email === '' || $email === null) {
@@ -207,12 +305,14 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
                 $szuletesi_ido,
                 $anyja_neve,
                 $lakcim,
-                    $email,
-                    $jelszo_hash,
-                    0
+                $email,
+                $telepules ?: null,
+                $iskola_om ?: null,
+                $jelszo_hash,
+                0
             ]);
             $count++;
-            log_msg("Szemelyek: executed insert/update for okt={$oktatasi_azonosito}, row={$i}");
+            log_msg("Szemelyek: executed insert/update for okt={$oktatasi_azonosito}, row={$i}, telepules={$telepules}, iskola_om={$iskola_om}");
         } catch (Exception $e) {
             log_msg("Error inserting szemely row $i: " . $e->getMessage());
         }

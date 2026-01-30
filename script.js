@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!fileList || !fileInput) return;
         fileList.innerHTML = "";
 
-        const hasFiles = Array.from(fileInput.files).filter(f => f.name.match(/\.(xlsx|xls)$/i)).length > 0;
-        
+        const hasFiles = Array.from(fileInput.files).length > 0;
+
         if (hasFiles) {
             fileList.classList.add("visible");
         } else {
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         Array.from(fileInput.files).forEach((file, index) => {
-            if (!file.name.match(/\.(xlsx|xls)$/i)) return;
+            if (!file.name.match(/\.(xlsx|xls|csv)$/i)) return;
 
             const div = document.createElement("div");
             div.className = "file-item";

@@ -24,6 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])
         if (!$student) {
             $message = '✗ Nem található tanulórekord ezzel az oktatási azonosítóval!';
         } else {
+            // Iskola adatainak lekérése ha van OM azonosító
+            $iskola = null;
+            if (!empty($student['alt_iskola_om'])) {
+                $iskola_stmt = $pdo->prepare("SELECT nev, telepules FROM altalanos_iskolak WHERE om_azonosito = ? LIMIT 1");
+                $iskola_stmt->execute([$student['alt_iskola_om']]);
+                $iskola = $iskola_stmt->fetch(PDO::FETCH_ASSOC);
+            }
             // Dokumentumok lekérése
             $docs_stmt = $pdo->prepare("
                 SELECT 
@@ -142,6 +149,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])
                     <span class="info-label">Anyja neve:</span>
                     <span class="info-value"><?php echo htmlspecialchars($student['anyja_neve'] ?? '-'); ?></span>
                 </div>
+                <div class="info-row">
+                    <span class="info-label">Lakcím:</span>
+                    <span class="info-value"><?php echo htmlspecialchars($student['lakcim'] ?? '-'); ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Település:</span>
+                    <span class="info-value"><?php echo htmlspecialchars($student['telepules'] ?? '-'); ?></span>
+                </div>
+                <?php if ($iskola): ?>
+                <div class="info-row">
+                    <span class="info-label">Általános iskola:</span>
+                    <span class="info-value"><?php echo htmlspecialchars($iskola['nev'] ?? '-'); ?> (<?php echo htmlspecialchars($iskola['telepules'] ?? '-'); ?>)</span>
+                </div>
+                <?php endif; ?>
             </div>
             
             <!-- Dokumentumok -->

@@ -11,6 +11,14 @@ $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
     try {
+        // 0. Település oszlop a szemelyek táblához
+        $pdo->exec("ALTER TABLE `szemelyek` ADD COLUMN `telepules` varchar(100) DEFAULT NULL");
+        $message .= "✓ Település oszlop hozzáadva a szemelyek táblához<br>";
+    } catch (Exception $e) {
+        $message .= "ℹ Település oszlop már létezik<br>";
+    }
+
+    try {
         // 1. Új oszlopok az eredmenyek táblához
         $pdo->exec("ALTER TABLE `eredmenyek` ADD COLUMN `max_pont_magyar` INT(11) DEFAULT 50");
         $message .= "✓ Magyar max pont oszlop hozzáadva<br>";
