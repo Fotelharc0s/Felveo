@@ -115,46 +115,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
     
     if ($_POST['action'] === 'update_points') {
-        $eredmeny_id = $_POST['eredmeny_id'];
-        $pont = $_POST['pont'];
-        $max_magyar = $_POST['max_magyar'] ?? null;
-        $max_mate = $_POST['max_mate'] ?? null;
-        
+        $pontok = $_POST['pont'] ?? [];
+        $max_magyarok = $_POST['max_magyar'] ?? [];
+        $max_mateok = $_POST['max_mate'] ?? [];
+
         try {
             $pdo->beginTransaction();
-            
-            // Pontszám frissítése
-            if ($pont !== '') {
-                $pont_stmt = $pdo->prepare("
-                    INSERT INTO pontok (eredmeny_id, ponttipus_id, ertek)
-                    VALUES (?, (SELECT id FROM ponttipusok WHERE nev = 'elert_pont'), ?)
-                    ON DUPLICATE KEY UPDATE ertek = VALUES(ertek)
-                ");
-                $pont_stmt->execute([$eredmeny_id, (int)$pont]);
-            }
-            
-            // Max pontok frissítése
-            if ($max_magyar !== null || $max_mate !== null) {
+
+            // Minden eredmény frissítése
+            foreach ($pontok as $eredmeny_id => $pont) {
+                // Pontszám frissítése
+                if ($pont !== '') {
+                    $pont_stmt = $pdo->prepare("
+                        INSERT INTO pontok (eredmeny_id, ponttipus_id, ertek)
+                        VALUES (?, (SELECT id FROM ponttipusok WHERE nev = 'elert_pont'), ?)
+                        ON DUPLICATE KEY UPDATE ertek = VALUES(ertek)
+                    ");
+                    $pont_stmt->execute([$eredmeny_id, (int)$pont]);
+                }
+
+                // Max pontok frissítése
                 $update_max = "UPDATE eredmenyek SET ";
                 $params = [];
-                if ($max_magyar !== null) {
+                $has_update = false;
+
+                if (isset($max_magyarok[$eredmeny_id]) && $max_magyarok[$eredmeny_id] !== '') {
                     $update_max .= "max_pont_magyar = ?";
-                    $params[] = (int)$max_magyar;
+                    $params[] = (int)$max_magyarok[$eredmeny_id];
+                    $has_update = true;
                 }
-                if ($max_mate !== null) {
-                    if (!empty($params)) $update_max .= ", ";
+
+                if (isset($max_mateok[$eredmeny_id]) && $max_mateok[$eredmeny_id] !== '') {
+                    if ($has_update) $update_max .= ", ";
                     $update_max .= "max_pont_matematika = ?";
-                    $params[] = (int)$max_mate;
+                    $params[] = (int)$max_mateok[$eredmeny_id];
+                    $has_update = true;
                 }
-                $update_max .= " WHERE id = ?";
-                $params[] = $eredmeny_id;
-                
-                $max_stmt = $pdo->prepare($update_max);
-                $max_stmt->execute($params);
+
+                if ($has_update) {
+                    $update_max .= " WHERE id = ?";
+                    $params[] = $eredmeny_id;
+
+                    $max_stmt = $pdo->prepare($update_max);
+                    $max_stmt->execute($params);
+                }
             }
-            
+
             $pdo->commit();
-            $message = '✓ Pontszámok sikeresen módosítva!';
+            $message = '✓ Összes pontszám sikeresen módosítva!';
         } catch (Exception $e) {
             $pdo->rollBack();
             $message = '✗ Hiba: ' . $e->getMessage();
@@ -284,48 +292,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 <!-- Pontszámok módosítása -->
                 <?php if (!empty($results)): ?>
                     <h3>Pontszámok módosítása</h3>
-                    <table class="points-table">
-                        <thead>
-                            <tr>
-                                <th>Tárgy</th>
-                                <th>Max pont</th>
-                                <th>Elért pont</th>
-                                <th>Módosítás</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                                $seenTargyak = [];
-                                foreach ($results as $result):
-                                    // Skip duplicate subject rows (sometimes duplicated imports create multiple eredmenyek rows)
-                                    if (in_array($result['targy_id'], $seenTargyak)) continue;
-                                    $seenTargyak[] = $result['targy_id'];
-                            ?>
-                                        <tr>
-                                            <form method="POST" class="form-contents">
-                                                <input type="hidden" name="action" value="update_points">
-                                                <input type="hidden" name="eredmeny_id" value="<?php echo $result['id']; ?>">
+                    <form method="POST">
+                        <input type="hidden" name="action" value="update_points">
+                        <table class="points-table">
+                            <thead>
+                                <tr>
+                                    <th>Tárgy</th>
+                                    <th>Max pont</th>
+                                    <th>Elért pont</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                    $seenTargyak = [];
+                                    foreach ($results as $result):
+                                        // Skip duplicate subject rows (sometimes duplicated imports create multiple eredmenyek rows)
+                                        if (in_array($result['targy_id'], $seenTargyak)) continue;
+                                        $seenTargyak[] = $result['targy_id'];
+                                ?>
+                                            <tr>
                                                 <td><?php echo htmlspecialchars($result['targy_nev']); ?></td>
                                                 <td>
                                                     <?php if ($result['targy_id'] == 1): ?>
-                                                        <input type="number" name="max_magyar" value="<?php echo $result['max_pont_magyar']; ?>" placeholder="Max magyar">
+                                                        <input type="number" name="max_magyar[<?php echo $result['id']; ?>]" value="<?php echo $result['max_pont_magyar']; ?>" placeholder="Max magyar">
                                                     <?php elseif ($result['targy_id'] == 2): ?>
-                                                        <input type="number" name="max_mate" value="<?php echo $result['max_pont_matematika']; ?>" placeholder="Max matek">
+                                                        <input type="number" name="max_mate[<?php echo $result['id']; ?>]" value="<?php echo $result['max_pont_matematika']; ?>" placeholder="Max matek">
                                                     <?php else: ?>
                                                         -
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <input type="number" name="pont" value="<?php echo $result['ertek'] ?? ''; ?>" placeholder="Elért pont">
+                                                    <input type="number" name="pont[<?php echo $result['id']; ?>]" value="<?php echo $result['ertek'] ?? ''; ?>" placeholder="Elért pont">
                                                 </td>
-                                                <td>
-                                                    <button type="submit" class="btn-save-small">Mentés</button>
-                                                </td>
-                                            </form>
-                                        </tr>
-                                    <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                                            </tr>
+                                        <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <div class="button-group-center" style="margin-top: 20px;">
+                            <button type="submit" class="btn-success">💾 Összes pontszám mentése</button>
+                        </div>
+                    </form>
                 <?php endif; ?>
 
                 <!-- Dokumentum feltöltés -->
