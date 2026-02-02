@@ -43,6 +43,21 @@ if (!empty($settings['kiirando_adatok'])) {
     $kiirando_adatok = json_decode($settings['kiirando_adatok'], true) ?: [];
 }
 
+// Ha üres, alapértelmezett
+if (empty($kiirando_adatok)) {
+    $kiirando_adatok = [
+        'oktatasi_azonosito' => true,
+        'nev' => true,
+        'szuletesi_ido' => false,
+        'anyja_neve' => false,
+        'email' => false,
+        'lakcim' => false,
+        'iskola_nev' => false,
+        'iskola_cim' => false,
+        'iskola_varos' => false
+    ];
+}
+
 // JSON válasz AJAX-hoz
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])) {
     $okt = $_POST['oktatasi_azonosito'];
@@ -221,12 +236,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])
 
                     // Diák adatai
                     for (const [label, value] of Object.entries(data.adatok)) {
-                        if (value) {
-                            html += '<div class="info-row">';
-                            html += '<span class="info-label">' + label + ':</span>';
-                            html += '<span class="info-value">' + (value || '-') + '</span>';
-                            html += '</div>';
-                        }
+                        html += '<div class="info-row">';
+                        html += '<span class="info-label">' + label + ':</span>';
+                        html += '<span class="info-value">' + (value || '-') + '</span>';
+                        html += '</div>';
                     }
 
                     html += '</div>';

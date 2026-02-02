@@ -422,7 +422,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 /* Placeholders table styling */
 .card table { width: 100%; border-collapse: collapse; margin-top: 8px; }
 .card th, .card td { padding: 8px 10px; vertical-align: top; border-bottom: 1px solid rgba(0,0,0,0.06); text-align: left; }
-.card th { font-size: 13px; color: #374151; }
+.card th { font-size: 13px; color: var(--text); }
 .card td { font-size: 14px; color: var(--text); }
 .card tr:last-child td { border-bottom: none; }
 
@@ -596,7 +596,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 
 .filter-form h3 {
     margin-top: 0;
-    color: #333;
+    color: var(--text);
 }
 
 .filter-fields {
@@ -1154,7 +1154,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 }
 
 .settings-help {
-    color: #666;
+    color: var(--text);
     margin-bottom: 15px;
 }
 
@@ -1165,7 +1165,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 
 .no-results {
     margin-top: 15px;
-    color: #666;
+    color: var(--text);
 }
 
 .setup-link {
