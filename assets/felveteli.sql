@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2026. Jan 29. 11:19
+-- Létrehozás ideje: 2026. Feb 03. 08:56
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -58,7 +58,8 @@ CREATE TABLE `beallitasok` (
 INSERT INTO `beallitasok` (`id`, `nev`, `ertek`, `leiras`, `modositva`) VALUES
 (1, 'max_pont_magyar_alapertelmezett', '50', 'Alapértelmezett maximum pontszám magyar', '2026-01-28 08:41:26'),
 (2, 'max_pont_matematika_alapertelmezett', '50', 'Alapértelmezett maximum pontszám matematika', '2026-01-28 08:41:26'),
-(3, 'dokumentumok_mappa', 'uploads/dokumentumok/', 'Feltöltött dokumentumok mappája', '2026-01-28 08:41:26');
+(3, 'dokumentumok_mappa', 'uploads/dokumentumok/', 'Feltöltött dokumentumok mappája', '2026-01-28 08:41:26'),
+(5, 'kiirando_adatok', '{\"oktatasi_azonosito\":true,\"nev\":true,\"szuletesi_ido\":false,\"anyja_neve\":false,\"email\":false,\"lakcim\":false,\"iskola_nev\":false,\"iskola_cim\":false,\"iskola_varos\":false}', NULL, '2026-02-02 07:53:19');
 
 -- --------------------------------------------------------
 
@@ -75,6 +76,14 @@ CREATE TABLE `dokumentumok` (
   `feltoltve` timestamp NOT NULL DEFAULT current_timestamp(),
   `modositva` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `dokumentumok`
+--
+
+INSERT INTO `dokumentumok` (`id`, `oktatasi_azonosito`, `targy_id`, `fajlnev`, `fajl_path`, `feltoltve`, `modositva`) VALUES
+(2, '72770184806', 1, 'sample-local-pdf.pdf', 'uploads/dokumentumok/72770184806_1_1770019639.pdf', '2026-02-02 08:07:19', '2026-02-02 08:07:19'),
+(3, '72770184806', 2, 'file-sample_150kB.pdf', 'uploads/dokumentumok/72770184806_2_1770019647.pdf', '2026-02-02 08:07:27', '2026-02-02 08:07:27');
 
 -- --------------------------------------------------------
 
@@ -100,7 +109,9 @@ INSERT INTO `eredmenyek` (`id`, `oktatasi_azonosito`, `targy_id`, `max_pont_magy
 (386, '12345678901', 1, 50, 50),
 (387, '12345678901', 2, 50, 50),
 (388, '23456789012', 1, 50, 50),
-(389, '23456789012', 2, 50, 50);
+(389, '23456789012', 2, 50, 50),
+(394, '98765432109', 1, 40, 50),
+(395, '98765432109', 2, 50, 40);
 
 -- --------------------------------------------------------
 
@@ -119,12 +130,14 @@ CREATE TABLE `pontok` (
 --
 
 INSERT INTO `pontok` (`eredmeny_id`, `ponttipus_id`, `ertek`) VALUES
-(384, 2, 69),
-(385, 2, 69),
+(384, 2, 49),
+(385, 2, 40),
 (386, 2, 85),
 (387, 2, 92),
 (388, 2, 78),
-(389, 2, 88);
+(389, 2, 88),
+(394, 2, 35),
+(395, 2, 40);
 
 -- --------------------------------------------------------
 
@@ -175,17 +188,19 @@ CREATE TABLE `szemelyek` (
   `anyja_neve` varchar(100) NOT NULL,
   `email` varchar(150) NOT NULL,
   `jelszo_hash` varchar(255) NOT NULL,
-  `is_placeholder` tinyint(1) NOT NULL DEFAULT 0
+  `is_placeholder` tinyint(1) NOT NULL DEFAULT 0,
+  `telepules` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 
 --
 -- A tábla adatainak kiíratása `szemelyek`
 --
 
-INSERT INTO `szemelyek` (`oktatasi_azonosito`, `nev`, `szuletesi_ido`, `alt_iskola_om`, `lakcim`, `anyja_neve`, `email`, `jelszo_hash`, `is_placeholder`) VALUES
-('12345678901', 'Kiss Péter', '2008-04-12', NULL, '', 'Kiss Anna', 'kisspeter@gmail.com', '', 0),
-('23456789012', 'Nagy Éva', '2009-06-01', NULL, '', 'Nagy Mária', 'nagyeva@gmail.com', '', 0),
-('72770184806', 'Nagy Lajos', '2008-04-12', NULL, '', 'Kiss Anna', 'nagylajos@gmail.com', '', 0);
+INSERT INTO `szemelyek` (`oktatasi_azonosito`, `nev`, `szuletesi_ido`, `alt_iskola_om`, `lakcim`, `anyja_neve`, `email`, `jelszo_hash`, `is_placeholder`, `telepules`) VALUES
+('12345678901', 'Nagy Anna', '2006-03-05', NULL, 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'anna.nagy@example.com', '', 0, NULL),
+('23456789012', 'Nagy Éva', '2009-06-01', NULL, '', 'Nagy Mária', 'nagyeva@gmail.com', '', 0, NULL),
+('72770184806', 'Kovács János', '2005-05-12', NULL, 'Budapest IX.', 'Kovácsné', 'kovacs.janos@example.com', '', 0, NULL),
+('98765432109', 'Horváth Péter', '2004-11-20', NULL, '', 'Horváthné', 'peter.horvath@example.com', '', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -337,19 +352,19 @@ ALTER TABLE `telepulesek`
 -- AUTO_INCREMENT a táblához `beallitasok`
 --
 ALTER TABLE `beallitasok`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT a táblához `dokumentumok`
 --
 ALTER TABLE `dokumentumok`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT a táblához `eredmenyek`
 --
 ALTER TABLE `eredmenyek`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=390;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=396;
 
 --
 -- AUTO_INCREMENT a táblához `ponttipusok`
