@@ -1299,34 +1299,71 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     .admin-container {
         padding: 10px;
     }
-    
+
     .header {
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
     }
-    
+
     .header h1 {
         margin: 0;
         text-align: left;
     }
-    
+
     .document-scores {
         grid-template-columns: 1fr;
     }
-    
+
     .button-group {
         flex-direction: column;
     }
-    
+
     .button-group button,
     .button-group a {
         flex: auto;
     }
-    
+
     .footer-wrapper {
         margin-top: 40px;
         padding: 20px 15px;
         font-size: 12px;
+    }
+
+    /* Table overflow for mobile */
+    .students-list table,
+    .points-table,
+    .results-table {
+        overflow-x: auto;
+        display: block;
+        white-space: nowrap;
+    }
+
+    .students-list th,
+    .students-list td,
+    .points-table th,
+    .points-table td,
+    .results-table th,
+    .results-table td {
+        white-space: nowrap;
+        min-width: 120px;
+    }
+
+    /* Student view container padding */
+    .student-view-container {
+        padding: 20px;
+    }
+
+    .student-view-container h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Eredmeny container padding */
+    .eredmeny-container {
+        padding: 20px;
+    }
+
+    .eredmeny-container h1 {
+        font-size: 1.5rem;
     }
 }
