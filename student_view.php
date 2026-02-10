@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])
     .pdf-modal .modal-close { background: transparent; border: none; font-size: 18px; cursor: pointer; }
     .pdf-modal iframe { border: 0; width: 100%; height: 100%; flex: 1 1 auto; }
     .document-actions { display:flex; gap:8px; align-items:center; margin-top:8px; }
-    .view-btn, .download-btn { padding:6px 10px; border-radius:4px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; color:inherit; }
+    .view-btn, .download-btn { padding:6px 10px; border-radius:4px; border:1px solid var(--border); background:var(--card-bg); cursor:pointer; text-decoration:none; color:var(--text); }
     .view-btn:hover, .download-btn:hover { box-shadow:0 2px 6px rgba(0,0,0,0.08); }
     </style>
 </head>
