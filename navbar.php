@@ -6,7 +6,7 @@ $current = basename($_SERVER['PHP_SELF']);
 
 <nav class="nav">
     <a href="index.php" class="brand">
-        <span>📊</span> Felveo
+        <img src="assets/logo.png" alt="Felveo Logo" class="logo" style="width: 20%; height: auto;">
     </a>
     
     <div class="links">
