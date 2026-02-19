@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2026. Feb 03. 08:56
+-- Létrehozás ideje: 2026. Feb 19. 12:04
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -36,6 +36,15 @@ CREATE TABLE `altalanos_iskolak` (
   `iranyitoszam` char(4) NOT NULL,
   `telepules` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `altalanos_iskolak`
+--
+
+INSERT INTO `altalanos_iskolak` (`om_azonosito`, `nev`, `cim`, `telefonszam`, `email`, `iranyitoszam`, `telepules`) VALUES
+('031200', 'Edelényi Általános Iskola', 'Borsodi utca 2.', '06201234567', 'edeleny@gmail.com', '3780', 'Edelény'),
+('034500', 'Debreceni Általános Iskola', 'Kossuth Lajos utca 1.', '06301234567', 'debrecen@gmail.com', '4000', 'Debrecen'),
+('050400', 'Sajószentpéteri Általános Iskola', 'Móra utca 4', '06309876543', 'sajoszentpeter@gmail.com', '3770', 'Sajószentpéter');
 
 -- --------------------------------------------------------
 
@@ -108,8 +117,6 @@ INSERT INTO `eredmenyek` (`id`, `oktatasi_azonosito`, `targy_id`, `max_pont_magy
 (385, '72770184806', 2, 50, 50),
 (386, '12345678901', 1, 50, 50),
 (387, '12345678901', 2, 50, 50),
-(388, '23456789012', 1, 50, 50),
-(389, '23456789012', 2, 50, 50),
 (394, '98765432109', 1, 40, 50),
 (395, '98765432109', 2, 50, 40);
 
@@ -134,8 +141,6 @@ INSERT INTO `pontok` (`eredmeny_id`, `ponttipus_id`, `ertek`) VALUES
 (385, 2, 40),
 (386, 2, 85),
 (387, 2, 92),
-(388, 2, 78),
-(389, 2, 88),
 (394, 2, 35),
 (395, 2, 40);
 
@@ -197,10 +202,9 @@ CREATE TABLE `szemelyek` (
 --
 
 INSERT INTO `szemelyek` (`oktatasi_azonosito`, `nev`, `szuletesi_ido`, `alt_iskola_om`, `lakcim`, `anyja_neve`, `email`, `jelszo_hash`, `is_placeholder`, `telepules`) VALUES
-('12345678901', 'Nagy Anna', '2006-03-05', NULL, 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'anna.nagy@example.com', '', 0, NULL),
-('23456789012', 'Nagy Éva', '2009-06-01', NULL, '', 'Nagy Mária', 'nagyeva@gmail.com', '', 0, NULL),
-('72770184806', 'Kovács János', '2005-05-12', NULL, 'Budapest IX.', 'Kovácsné', 'kovacs.janos@example.com', '', 0, NULL),
-('98765432109', 'Horváth Péter', '2004-11-20', NULL, '', 'Horváthné', 'peter.horvath@example.com', '', 0, NULL);
+('12345678901', 'Nagy Anna', '2006-03-05', NULL, 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'anna.nagy@example.com', '', 0, 'Debrecen'),
+('72770184806', 'Kovács János', '2005-05-12', NULL, '3780 Edelény xy utca 12', 'Kovácsné', 'kovacs.janos@example.com', '', 0, 'Edelény'),
+('98765432109', 'Horváth Péter', '2004-11-20', NULL, '3770 Sajószentpéter xyz utca 11', 'Horváthné', 'peter.horvath@example.com', '', 0, 'Sajószentpéter');
 
 -- --------------------------------------------------------
 
