@@ -1,5 +1,35 @@
 // ===== Fő inicializáció =====
 document.addEventListener('DOMContentLoaded', function () {
+    
+    // ===== Mobile menu toggle =====
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav .links');
+    
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            // Update icon
+            const isActive = navLinks.classList.contains('active');
+            menuToggle.textContent = isActive ? '✕' : '☰';
+        });
+        
+        // Close menu when clicking on a link
+        navLinks.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                navLinks.classList.remove('active');
+                menuToggle.textContent = '☰';
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+                navLinks.classList.remove('active');
+                menuToggle.textContent = '☰';
+            }
+        });
+    }
+    
     // ===== Theme toggle =====
     const toggleBtn = document.getElementById("themeToggle");
     const body = document.body;

@@ -3,15 +3,16 @@
     --bg: #f4f6f8;
     --card-bg: #ffffff;
     --text: #0f1724;
-    --primary: #0ea5ff; /* brighter cyan */
+    --primary: #0ea5ff;
     --logo-filter: none;
     --logo-filter-dark: invert(1) brightness(1.15) saturate(1.1);
-    --primary-2: #7c3aed; /* accent purple */
+    --primary-2: #7c3aed;
     --primary-hover: #0284c7;
     --border: #e5e7eb;
     --success: #16a34a;
     --error: #dc2626;
     --transition: all 0.3s ease;
+    --navbar-height: 60px;
 }
 
 body.dark {
@@ -32,7 +33,7 @@ body.dark {
 
 body {
     margin: 0;
-    padding: 80px 0 0 0; 
+    padding: var(--navbar-height) 0 0 0; 
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
     background: var(--bg);
     color: var(--text);
@@ -68,7 +69,6 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
 }
-
 
 h1, h2 {
     margin: 0 0 16px 0;
@@ -110,6 +110,9 @@ h1, h2 {
     font-weight: 600;
     cursor: pointer;
     margin-top: 8px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .primary-btn:hover {
@@ -122,6 +125,9 @@ h1, h2 {
     color: var(--text);
     cursor: pointer;
     margin-top: 10px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .secondary-btn:hover {
@@ -129,7 +135,6 @@ h1, h2 {
 }
 
 /* ===== 5. Speciális komponenseks ===== */
-
 
 .file-input {
     display: block;
@@ -149,7 +154,6 @@ h1, h2 {
 
 .file-input input { display: none; }
 
-
 .progress {
     width: 100%;
     height: 8px;
@@ -167,38 +171,6 @@ h1, h2 {
     transition: width 0.3s ease;
 }
 
-
-.theme-toggle {
-    position: fixed;
-    top: 50px;
-    right: 50px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    width: 100px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    z-index: 1000;
-}
-
-
-.nav .theme-toggle {
-    position: static;
-    width: 55px;
-    height: 55px;
-    border-radius: 8px;
-    padding: 4px 8px;
-    font-size: 16px;
-    margin-left: 12px;
-    box-shadow: none;
-}
-
-
 .status {
     margin-top: 16px;
     text-align: center;
@@ -207,51 +179,6 @@ h1, h2 {
 
 .status.success { color: var(--success); }
 .status.error { color: var(--error); }
-
-/* ===== 6. Reszponzív Media Queries ===== */
-
-/* Mobil nézet (Telefonok) */
-@media (max-width: 480px) {
-    body {
-        align-items: flex-start; /* Ne legyen függőlegesen középen, ha hosszú a tartalom */
-        padding-top: 60px;
-    }
-
-    .container {
-        padding: 0; /* A body paddingje elég */
-    }
-
-    .card {
-        padding: 20px;
-        border-radius: 14px;
-    }
-
-    h1 { font-size: 1.5rem; }
-
-    .theme-toggle {
-        top: 10px;
-        right: 10px;
-    }
-}
-
-/* Tablet nézet */
-@media (min-width: 481px) and (max-width: 768px) {
-    .container {
-        max-width: 400px;
-    }
-}
-
-/* Nagy kijelzők */
-@media (min-width: 1200px) {
-    .card {
-        padding: 32px;
-    }
-}
-
-/* Sötét mód finomítás sötét háttérnél */
-body.dark .file-input:hover {
-    background: rgba(56, 189, 248, 0.05);
-}
 
 /* ===== Eredmények megjelenítése (kártyák) ===== */
 .result {
@@ -315,10 +242,11 @@ body.dark .file-input:hover {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 14px 20px;
+    padding: 10px 20px;
     z-index: 900;
     background: var(--card-bg);
     border-bottom: 1px solid var(--border);
+    height: var(--navbar-height);
 }
 
 .nav .brand {
@@ -332,15 +260,17 @@ body.dark .file-input:hover {
 }
 
 .brand img.logo {
-    height: 40px;
+    height: 36px;
     display: block;
     filter: var(--logo-filter);
     transition: filter 0.18s ease;
+    max-width: 120px;
+    width: auto;
 }
 
 .nav .links {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     flex-wrap: wrap;
     justify-content: flex-end;
@@ -349,16 +279,17 @@ body.dark .file-input:hover {
 .nav .links a,
 .nav .links button {
     padding: 8px 12px;
-    border-radius: 10px;
+    border-radius: 8px;
     text-decoration: none;
     color: var(--text);
     border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
     transition: all 0.3s ease;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .nav .links a:hover,
@@ -394,10 +325,21 @@ body.dark .file-input:hover {
     background: var(--bg);
 }
 
+/* Mobile menu toggle */
+.nav .menu-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: var(--text);
+}
+
 /* ===== Footer ===== */
 .footer-wrapper {
     margin-top: auto;
-    padding: 30px 20px;
+    padding: 20px;
     background: var(--card-bg);
     border-top: 1px solid var(--border);
     text-align: center;
@@ -434,20 +376,6 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     color: red;
 }
 
-@media (max-width: 700px) {
-    .card table, .card th, .card td { font-size: 13px; }
-    
-    .nav .links {
-        gap: 6px;
-    }
-    
-    .nav .links a,
-    .nav .links button {
-        padding: 6px 10px;
-        font-size: 13px;
-    }
-}
-
 /* ===== Eredmény oldal (eredmeny.php) ===== */
 .eredmeny-body {
     background: var(--bg);
@@ -463,16 +391,16 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 20px;
 }
 
 .eredmeny-container {
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    max-width: 700px;
     width: 100%;
-    padding: 40px;
+    max-width: 700px;
+    padding: 30px;
 }
 
 .tajekoztatas {
@@ -552,6 +480,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+    width: 100%;
 }
 
 .header {
@@ -563,6 +492,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     padding: 20px;
     border-radius: 10px;
     border: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .header h1 {
@@ -597,11 +528,12 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 .filter-form h3 {
     margin-top: 0;
     color: var(--text);
+    margin-bottom: 15px;
 }
 
 .filter-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
 }
 
@@ -613,6 +545,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 .filter-field label {
     margin-bottom: 5px;
     font-weight: bold;
+    font-size: 13px;
 }
 
 .filter-field input {
@@ -621,19 +554,24 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     border-radius: 4px;
     font-family: inherit;
     font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text);
 }
 
 .filter-actions {
     display: flex;
     align-items: flex-end;
     gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
 }
 
 .btn-filter {
     flex: 1;
+    min-width: 120px;
     background: linear-gradient(90deg, var(--primary), var(--primary-2));
     color: white;
-    padding: 10px;
+    padding: 10px 15px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -647,10 +585,11 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 
 .btn-reset {
     flex: 1;
+    min-width: 120px;
     background: var(--card-bg);
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 10px;
+    padding: 10px 15px;
     text-align: center;
     text-decoration: none;
     border-radius: 8px;
@@ -675,14 +614,6 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     margin-top: 30px;
 }
 
-.filter-form {
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
 /* Edit form wrapper */
 .edit-form-wrapper {
     background: var(--card-bg);
@@ -701,6 +632,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    overflow-x: auto;
+    display: block;
 }
 
 .points-table thead {
@@ -711,6 +644,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 .points-table td {
     padding: 10px;
     border: 1px solid var(--border);
+    min-width: 120px;
 }
 
 .points-table th {
@@ -773,24 +707,6 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     opacity: 0.85;
 }
 
-.btn-secondary {
-    background: var(--card-bg);
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-    border-color: var(--primary);
-    background: var(--bg);
-}
-
 /* Form with display: contents */
 .form-contents {
     display: contents;
@@ -821,6 +737,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 /* Students list table styling */
 .students-list {
     margin-top: 20px;
+    overflow-x: auto;
 }
 
 .students-list table {
@@ -830,6 +747,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
+    min-width: 800px;
 }
 
 .students-list thead {
@@ -842,12 +760,14 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     text-align: left;
     font-weight: 600;
     color: var(--text);
+    white-space: nowrap;
 }
 
 .students-list td {
     padding: 12px;
     border-bottom: 1px solid var(--border);
     color: var(--text);
+    white-space: nowrap;
 }
 
 .students-list tbody tr:hover {
@@ -881,6 +801,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     border-radius: 6px;
     font-family: inherit;
     font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text);
 }
 
 .form-row input:focus,
@@ -893,11 +815,13 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 .button-group {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .button-group button,
 .button-group a {
     flex: 1;
+    min-width: 120px;
     padding: 12px;
     border: none;
     border-radius: 6px;
@@ -934,6 +858,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
+    min-width: 400px;
 }
 
 .results-table th,
@@ -973,9 +898,9 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    max-width: 800px;
     width: 100%;
-    padding: 40px;
+    max-width: 800px;
+    padding: 30px;
 }
 
 .student-info {
@@ -997,6 +922,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     justify-content: space-between;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 5px;
 }
 
 .info-row:last-child {
@@ -1040,6 +967,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .document-subject {
@@ -1137,10 +1066,6 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     background: var(--bg);
 }
 
-.btn-back:hover {
-    opacity: 0.9;
-}
-
 .card-subtitle {
     text-align: center;
     margin: 12px 0 18px 0;
@@ -1192,6 +1117,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     font-family: inherit;
     font-size: 14px;
     margin-bottom: 12px;
+    background: var(--card-bg);
+    color: var(--text);
 }
 
 .login-form input:focus {
@@ -1223,26 +1150,6 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     border: 1px solid var(--border);
 }
 
-.select {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-family: inherit;
-    transition: var(--transition);
-    border: 1px solid var(--border);
-    background: var(--card-bg);
-    color: var(--text);
-    margin-bottom: 16px;
-    outline: none;
-}
-
-.select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-/* File list styling */
 .file-list {
     margin: 20px 0;
     padding: 15px;
@@ -1268,6 +1175,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     margin-bottom: 8px;
     font-size: 14px;
     word-break: break-all;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .file-item:last-child {
@@ -1276,7 +1185,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 
 .file-item span {
     flex: 1;
-    margin-right: 10px;
+    min-width: 150px;
 }
 
 .file-item button {
@@ -1294,76 +1203,352 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     opacity: 0.85;
 }
 
-/* ===== Responsive ===== */
+/* ===== Overall summary ===== */
+.overall-summary {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.overall-summary strong {
+    margin-right: 8px;
+}
+
+/* ===== Responsive Media Queries ===== */
+
+/* Nagyobb mobil (plusz méretű telefonok) */
+@media (max-width: 400px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .card {
+        padding: 18px;
+        margin-top: 30%;
+    }
+    
+    h1 {
+        font-size: 1.4rem;
+    }
+    
+    .button-group-center {
+        flex-direction: column;
+    }
+    
+    .button-group-center a {
+        width: 100%;
+    }
+}
+
+/* Tablet nézet (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .container {
+        max-width: 500px;
+    }
+    
+    .card {
+        margin-top: 25%;
+        padding: 22px;
+    }
+    
+    .eredmeny-container,
+    .student-view-container {
+        padding: 25px;
+    }
+    
+    .document-scores {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .filter-fields {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Kisebb tablet / nagyobb mobil (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        max-width: 600px;
+    }
+    
+    .card {
+        margin-top: 15%;
+    }
+    
+    .eredmeny-container,
+    .student-view-container {
+        max-width: 600px;
+    }
+    
+    .admin-container {
+        padding: 15px;
+    }
+    
+    .header {
+        padding: 15px;
+    }
+    
+    .filter-form {
+        padding: 15px;
+    }
+}
+
+/* Nagyobb kijelzők (desktop) */
+@media (min-width: 1025px) {
+    .container {
+        max-width: 500px;
+    }
+    
+    .card {
+        margin-top: 10%;
+        padding: 28px;
+    }
+    
+    .eredmeny-container,
+    .student-view-container {
+        padding: 40px;
+    }
+}
+
+/* Extra nagy kijelzők */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 600px;
+    }
+    
+    .card {
+        padding: 32px;
+    }
+    
+    .admin-container {
+        padding: 30px;
+    }
+}
+
+/* Mobile menu styles */
 @media (max-width: 700px) {
+    .nav {
+        padding: 8px 15px;
+    }
+    
+    .nav .brand {
+        font-size: 16px;
+    }
+    
+    .brand img.logo {
+        height: 30px;
+        max-width: 100px;
+    }
+    
+    .nav .links {
+        position: absolute;
+        top: var(--navbar-height);
+        left: 0;
+        right: 0;
+        background: var(--card-bg);
+        flex-direction: column;
+        padding: 15px;
+        gap: 10px;
+        border-bottom: 1px solid var(--border);
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .nav .links.active {
+        display: flex;
+    }
+    
+    .nav .links a,
+    .nav .links button {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+    }
+    
+    .nav .menu-toggle {
+        display: block;
+    }
+    
+    /* Admin container */
     .admin-container {
         padding: 10px;
     }
-
+    
     .header {
         flex-direction: column;
-        gap: 15px;
         align-items: flex-start;
+        padding: 15px;
     }
-
+    
     .header h1 {
-        margin: 0;
-        text-align: left;
+        font-size: 1.3rem;
     }
-
-    .document-scores {
-        grid-template-columns: 1fr;
-    }
-
-    .button-group {
-        flex-direction: column;
-    }
-
-    .button-group button,
-    .button-group a {
-        flex: auto;
-    }
-
-    .footer-wrapper {
-        margin-top: 40px;
-        padding: 20px 15px;
-        font-size: 12px;
-    }
-
-    /* Table overflow for mobile */
+    
+    /* Tables */
     .students-list table,
     .points-table,
     .results-table {
-        overflow-x: auto;
         display: block;
-        white-space: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
-
-    .students-list th,
-    .students-list td,
-    .points-table th,
-    .points-table td,
-    .results-table th,
-    .results-table td {
-        white-space: nowrap;
-        min-width: 120px;
+    
+    /* Buttons */
+    .button-group {
+        flex-direction: column;
     }
-
-    /* Student view container padding */
+    
+    .button-group button,
+    .button-group a {
+        width: 100%;
+    }
+    
+    /* Forms */
+    .edit-form-wrapper {
+        padding: 15px;
+    }
+    
+    .filter-form {
+        padding: 15px;
+    }
+    
+    .filter-fields {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Student view */
     .student-view-container {
         padding: 20px;
     }
-
+    
     .student-view-container h1 {
         font-size: 1.5rem;
     }
-
-    /* Eredmeny container padding */
+    
+    .document-scores {
+        grid-template-columns: 1fr;
+    }
+    
+    .document-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    /* Eredmeny container */
     .eredmeny-container {
         padding: 20px;
     }
-
+    
     .eredmeny-container h1 {
         font-size: 1.5rem;
+    }
+    
+    /* Footer */
+    .footer-wrapper {
+        padding: 15px;
+        font-size: 12px;
+    }
+    
+    /* Import form */
+    .import-form {
+        padding: 20px;
+    }
+    
+    /* Edit form */
+    .edit-form {
+        padding: 20px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    body {
+        padding-top: 55px;
+    }
+    
+    :root {
+        --navbar-height: 55px;
+    }
+    
+    .nav {
+        padding: 6px 10px;
+    }
+    
+    .brand img.logo {
+        height: 26px;
+        max-width: 80px;
+    }
+    
+    .card {
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    h2 {
+        font-size: 1.2rem;
+    }
+    
+    .document-card {
+        padding: 15px;
+    }
+    
+    .score-item {
+        padding: 8px;
+    }
+    
+    .score-value {
+        font-size: 16px;
+    }
+}
+
+/* Sötét mód finomítás sötét háttérnél */
+body.dark .file-input:hover {
+    background: rgba(56, 189, 248, 0.05);
+}
+
+body.dark .document-card {
+    background: var(--card-bg);
+}
+
+body.dark .info-row {
+    border-bottom-color: var(--border);
+}
+
+/* Table responsive wrapper */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+}
+
+.table-wrapper table {
+    min-width: 600px;
+}
+
+/* Print styles */
+@media print {
+    .nav,
+    .footer-wrapper,
+    .theme-toggle,
+    .menu-toggle {
+        display: none !important;
+    }
+    
+    body {
+        padding-top: 0;
+    }
+    
+    .card,
+    .edit-form-wrapper,
+    .students-list table {
+        box-shadow: none;
+        border: 1px solid #ccc;
     }
 }

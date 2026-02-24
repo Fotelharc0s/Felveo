@@ -5,8 +5,9 @@ $current = basename($_SERVER['PHP_SELF']);
 ?>
 
 <nav class="nav">
+    <button class="menu-toggle" aria-label="Menü">☰</button>
     <a href="index.php" class="brand">
-        <img src="assets/logo.png" alt="Felveo Logo" class="logo" style="width: 20%; height: auto;">
+        <img src="assets/logo.png" alt="Felveo Logo" class="logo">
     </a>
     
     <div class="links">
