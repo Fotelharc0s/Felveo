@@ -6,7 +6,7 @@ Rövid, karbantartott leírás a jelenlegi állapot alapján. A README célja, h
 
 - **Backend:** PHP alapú, MySQL/MariaDB adatbázis támogatás (beállítás: `config.php`)
 - **Frontend:** HTML5, CSS3, JavaScript — centralizált stílus (`style.css`), logika (`script.js`)
-- **Admin felület:** `admin_dashboard.php` (studentek listája, szűrés), `admin_change_password.php` (jelszó módosítás)
+- **Admin felület:** `admin_dashboard.php` (diákok listája, szűrés — település most a tanuló saját települését mutatja, az iskola kiválasztása nélkül is), `admin_change_password.php` (jelszó módosítás)
 - **Importálás:** `import.php` (Excel `.xlsx` / `.xls` támogatás, drag & drop, fájllistázás)
 - **Téma:** Világos/sötét mód beépített váltóval a navigációs sávban (navbar)
 
@@ -86,6 +86,11 @@ composer install
 
 ## Testreszabás és fejlesztés
 
+> **Újdonság (2026‑02‑25):**
+> - Az admin dashboardon a "Település" oszlop most már a diák saját települését jeleníti meg. A szűrés ezen a mezőn a tanuló és az iskola településére is keres.
+> - Továbbra is látható az iskola neve külön oszlopban, ha a tanulóhoz van rendelve általános iskola.
+
+
 ### Téma beállítás
 A sötét/világos mód CSS változókon alapul (`:root` selector). Az aktuális beállítás a `localStorage`-ban tárolódik (`theme: 'dark'` vagy `'light'`).
 
@@ -119,6 +124,10 @@ A `cleanup.ps1` PowerShell script segítségével eltávolíthatók a felesleges
 A `.gitignore` fájl kizárja a naplókat (`*.log`), SQL dumpokat (`*.sql`), és a `samples/` mappát a verziókezelésből.
 
 ## Hibaelhárítás
+
+### Dokumentáció
+- A `Docs/` mappában található Word (`.docx`) dokumentumok a projekt leírását és felhasználói útmutatóját tartalmazzák. Érdemes őket PDF‑re vagy Markdownra konvertálni a könnyebb olvashatóság érdekében, de a tartalmuk teljes és naprakész.
+
 
 ### "404 nem találja az oldalt"
 - Ellenőrizd, hogy a projekt az `htdocs` vagy `www` mappában van-e

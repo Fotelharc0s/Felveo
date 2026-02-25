@@ -26,7 +26,9 @@ if (!empty($filter_nev)) {
 }
 
 if (!empty($filter_telepules)) {
-    $where_conditions[] = "a.telepules LIKE ?";
+    // keresés a diák saját településében, illetve ha nincs megadva, az általános iskola településében
+    $where_conditions[] = "(s.telepules LIKE ? OR a.telepules LIKE ?)";
+    $params[] = '%' . $filter_telepules . '%';
     $params[] = '%' . $filter_telepules . '%';
 }
 
@@ -45,7 +47,8 @@ $students_stmt = $pdo->prepare("
         s.anyja_neve,
         s.email,
         a.nev as iskola_nev,
-        a.telepules,
+        -- használjuk a diák saját települését, ha van, egyébként az iskola települését
+        COALESCE(NULLIF(s.telepules, ''), a.telepules) as telepules,
         COUNT(e.id) as eredmeny_count
     FROM szemelyek s
     LEFT JOIN eredmenyek e ON s.oktatasi_azonosito = e.oktatasi_azonosito
