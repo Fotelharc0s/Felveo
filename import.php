@@ -14,11 +14,12 @@ if (empty($_SESSION['is_admin'])) {
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
-<body>
+<body class="import-body">
     <?php require 'navbar.php'; ?>
 
-    <div class="container">
-    <form id="uploadForm" class="card" method="post" enctype="multipart/form-data" action="upload.php">
+    <main class="import-main">
+        <div class="import-container">
+            <form id="uploadForm" class="import-form" method="post" enctype="multipart/form-data" action="upload.php">
         <h1>Excel / CSV adat importálás</h1>
         <select name="import_type" class="select">
             <option value="szemelyek">Tanulók importálása</option>
@@ -72,7 +73,8 @@ if (empty($_SESSION['is_admin'])) {
         <button type="submit" class="primary-btn">Importálás</button>
     </form>
     <div id="status" class="status"></div>
-    </div>
+        </div>
+    </main>
 
     <?php require 'footer.php'; ?>
     <script src="script.js"></script>

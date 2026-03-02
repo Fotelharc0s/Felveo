@@ -10,11 +10,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
-<body>
+<body class="home-body">
     <?php require 'navbar.php'; ?>
 
-    <div class="container">
-        <div class="card">
+    <main class="home-main">
+        <div class="container home-container">
+            <div class="card home-card">
             <h1>Üdv a Felvevő alkalmazásban</h1>
             <p class="card-subtitle">Gyorsan importálhatsz Excel fájlokat, majd lekérdezheted a tanulók eredményeit.</p>
 
@@ -24,7 +25,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                 <a href="admin_login.php" class="primary-btn">Admin bejelentkezés</a>
             </div>
         </div>
-    </div>
+    </main>
 
     <?php require 'footer.php'; ?>
     <script src="script.js"></script>

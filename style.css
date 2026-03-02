@@ -59,7 +59,7 @@ body {
     background: var(--card-bg);
     border-radius: 16px;
     padding: 24px;
-    margin-top: 40%;
+    margin-top: 0;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -376,6 +376,36 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     color: red;
 }
 
+/* ===== Home oldal (index.php) ===== */
+.home-body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px !important;
+    padding-bottom: 0 !important;
+}
+
+.home-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.home-container {
+    max-width: 500px !important;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.home-card {
+    margin-top: 0 !important;
+}
+
 /* ===== Eredmény oldal (eredmeny.php) ===== */
 .eredmeny-body {
     background: var(--bg);
@@ -481,6 +511,9 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     margin: 0 auto;
     padding: 20px;
     width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
@@ -1143,11 +1176,37 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
 }
 
 /* ===== Import oldal (import.php) ===== */
+.import-body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px !important;
+    padding-bottom: 0 !important;
+}
+
+.import-main {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+}
+
+.import-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 600px;
+    padding: 30px;
+}
+
 .import-form {
     background: var(--card-bg);
-    padding: 30px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    padding: 0;
+    border-radius: 0;
+    border: none;
 }
 
 .file-list {
@@ -1227,7 +1286,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     
     .card {
         padding: 18px;
-        margin-top: 30%;
+        margin-top: 0;
     }
     
     h1 {
@@ -1250,7 +1309,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     }
     
     .card {
-        margin-top: 25%;
+        margin-top: 0;
         padding: 22px;
     }
     
@@ -1275,7 +1334,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     }
     
     .card {
-        margin-top: 15%;
+        margin-top: 0;
     }
     
     .eredmeny-container,
@@ -1303,7 +1362,7 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     }
     
     .card {
-        margin-top: 10%;
+        margin-top: 0;
         padding: 28px;
     }
     
