@@ -11,5 +11,5 @@
         <a href="eredmeny.php">Eredmények</a> | 
         <a href="admin_login.php">Admin</a>
     </p>
-    <p>© 2024-2026 Felveo. Minden jog fenntartva.</p>
+    <p>© 2025-2026 Felveo. Minden jog fenntartva.</p>
 </footer>
