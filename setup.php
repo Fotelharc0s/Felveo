@@ -1,6 +1,6 @@
 <?php
 /**
- * Egyszerű setup script - az adatbázis frissítéshez
+ * Egyszerű setup script – az adatbázis frissítéséhez és a szükséges mappák létrehozásához
  * Nyisd meg böngészőben: http://localhost/Felveo-main/setup.php
  */
 
@@ -8,6 +8,13 @@ require 'config.php';
 
 $message = '';
 $success = false;
+
+// biztosítjuk, hogy a fájlok feltöltéséhez szükséges mappa létezik
+if (!is_dir('uploads/dokumentumok')) {
+    if (mkdir('uploads/dokumentumok', 0755, true)) {
+        $message .= "✓ Feltöltési mappa létrehozva<br>";
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
     try {

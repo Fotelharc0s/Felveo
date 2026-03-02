@@ -1,3 +1,8 @@
+# Ignore configuration and runtime artefacts
+config.php               # helyi adatbázis-beállítások
+import_debug.log         # hibakeresési napló
+/uploads/                # feltöltött dokumentumok, méretük miatt nem kell a repo-ban
+
 # Ignore logs and DB dumps
 *.log
 *.sql

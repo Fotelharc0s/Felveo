@@ -1,6 +1,6 @@
 # Felveo — Felvételi import és lekérdező rendszer
 
-Rövid, karbantartott leírás a jelenlegi állapot alapján. A README célja, hogy gyorsan beállítható és használható legyen a rendszer helyi fejlesztésre.
+Rövid, karbantartott leírás a jelenlegi állapot alapján. A README célja, hogy gyorsan beállítható és használható legyen a rendszer helyi fejlesztéshez.
 
 ## Főbb pontok
 
@@ -114,14 +114,16 @@ A navbar-ban található téma váltó gomb (`<button class="theme-btn">`) a `sc
 ## Takarítás és verziókezelés
 
 ### Cleanup script
-A `cleanup.ps1` PowerShell script segítségével eltávolíthatók a felesleges fájlok:
+A `cleanup.ps1` PowerShell script segítségével eltávolíthatók a felesleges fájlok és mappák (naplók, minták, feltöltött fájlok). A skript az alábbi kapcsolókat fogadja:
 ```powershell
-.\cleanup.ps1        # Interaktív mód: kérdez törlés előtt
-.\cleanup.ps1 -Force # Közvetlen törlés kérdezés nélkül
+.\cleanup.ps1              # Interaktív mód: listáz és kérdez törlés előtt
+.\cleanup.ps1 -Force       # Közvetlen törlés kérdezés nélkül
+.\cleanup.ps1 -RemoveSamples # samples/ könyvtár törlése
+.\cleanup.ps1 -RemoveUploads # uploads/ könyvtár törlése (FIGYELJ!)
 ```
 
 ### .gitignore
-A `.gitignore` fájl kizárja a naplókat (`*.log`), SQL dumpokat (`*.sql`), és a `samples/` mappát a verziókezelésből.
+A `.gitignore` fájl kizárja a helyi konfigurációt és futási műanyagokat (`config.php`, `import_debug.log`, `uploads/`), valamint a naplókat (`*.log`), SQL dumpokat (`*.sql`) és a `samples/` mappát a verziókezelésből.
 
 ## Hibaelhárítás
 
@@ -149,7 +151,9 @@ Svelta Levente
 
 ## Utolsó frissítés
 
-2026-01-29
+2026-03-02
+
+> **Végleges verzió:** A helyesírás ellenőrzése és segédfájlok frissítve; projekt kifutásra kész.
 
 ---
 

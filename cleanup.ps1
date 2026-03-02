@@ -8,7 +8,8 @@ Usage:
 #>
 param(
     [switch]$Force,
-    [switch]$RemoveSamples
+    [switch]$RemoveSamples,
+    [switch]$RemoveUploads
 )
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -54,6 +55,21 @@ if ($RemoveSamples) {
         }
     } else {
         Write-Host "samples/ not found." -ForegroundColor Yellow
+    }
+}
+
+if ($RemoveUploads) {
+    $up = Join-Path $root 'uploads'
+    if (Test-Path $up) {
+        if ($Force) {
+            Remove-Item -LiteralPath $up -Recurse -Force
+            Write-Host "Removed uploads/" -ForegroundColor Green
+        } else {
+            $c = Read-Host "Remove uploads/ directory? (y/N)"
+            if ($c -match '^[Yy]') { Remove-Item -LiteralPath $up -Recurse -Force; Write-Host "Removed uploads/" -ForegroundColor Green } else { Write-Host "Left uploads/" -ForegroundColor Yellow }
+        }
+    } else {
+        Write-Host "uploads/ not found." -ForegroundColor Yellow
     }
 }
 

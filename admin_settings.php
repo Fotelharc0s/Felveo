@@ -193,7 +193,7 @@ if (!empty($settings['kiirando_adatok'])) {
 
             <!-- Tájékoztatás szöveg -->
             <div class="settings-card">
-                <h2>📢 Tájékoztatás Szöveg</h2>
+                <h2>📢 Tájékoztató Szöveg</h2>
                 <p class="settings-help">
                     Ez a szöveg megjelenik az eredménylekérdezéskor, mielőtt a felhasználó lekérdez:
                 </p>
@@ -210,7 +210,7 @@ if (!empty($settings['kiirando_adatok'])) {
             </div>
         </form>
 
-        <a href="admin_dashboard.php" class="back-link">← Vissza az admin panelhez</a>
+        <a href="admin_dashboard.php" class="back-link">← Vissza az admin felülethez</a>
     </div>
 
     <?php require 'footer.php'; ?>

@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['oktatasi_azonosito'])
     <?php require 'navbar.php'; ?>
     <div class="student-view-wrapper">
     <div class="student-view-container">
-        <h1>📄 Dolgozataimon</h1>
+        <h1>📄 Dolgozataim</h1>
         <p class="subtitle">Add meg az oktatási azonosítódat!</p>
         
         <?php if ($message): ?>

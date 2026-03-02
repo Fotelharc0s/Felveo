@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Felveo</title>
+    <title>Admin felület - Felveo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
     <div class="admin-container">
         <div class="header">
-            <h1>📊 Admin Panel</h1>
+            <h1>📊 Admin felület</h1>
         </div>
 
         <?php if ($message): ?>

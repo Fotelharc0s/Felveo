@@ -194,7 +194,7 @@ for ($fi = 0; $fi < $countFiles; $fi++) {
     }
 }
 
-echo "Importálás befejezve. Összesen importált sorok: " . intval($summary['imported']);
+echo "Importálás befejezve. Összes importált sor: " . intval($summary['imported']);
 
 
 /* ===== FÜGGVÉNYEK ===== */
