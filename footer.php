@@ -1,7 +1,4 @@
 <?php
-/**
- * Footer komponens
- */
 ?>
 
 <footer class="footer-wrapper">
