@@ -120,7 +120,7 @@ h1, h2 {
 }
 
 .secondary-btn {
-    background: transparent;
+    background: #ffffff;
     border: 1px solid var(--border);
     color: var(--text);
     cursor: pointer;
@@ -128,11 +128,82 @@ h1, h2 {
     text-decoration: none;
     display: inline-block;
     text-align: center;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .secondary-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: #f8fafc;
+    border-color: var(--primary);
+    color: var(--primary);
 }
+
+.template-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.template-help {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 0.8rem;
+    border-radius: 8px;
+    color: var(--text);
+}
+
+.template-help strong,
+.template-help p,
+.template-help ul,
+.template-help li,
+.template-help code {
+    color: var(--text);
+}
+
+.template-help,
+.template-help p,
+.template-help ul,
+.template-help li,
+.template-help code {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.template-help code {
+    display: block;
+    white-space: pre-wrap;
+    background: rgba(0,0,0,0.05);
+    padding: 0.3rem 0.4rem;
+    border-radius: 6px;
+    margin: 0.3rem 0;
+}
+
+body.dark .template-help {
+    background: #1f2937;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+}
+
+body.dark .template-help strong,
+body.dark .template-help p,
+body.dark .template-help ul,
+body.dark .template-help li,
+body.dark .template-help code {
+    color: #e2e8f0;
+}
+
+body.dark .secondary-btn {
+    background: #11223a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+body.dark .secondary-btn:hover {
+    background: #1b2c48;
+    border-color: #38bdf8;
+    color: #38bdf8;
+}
+
 
 /* ===== 5. Speciális komponenseks ===== */
 

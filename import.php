@@ -1,6 +1,47 @@
 <?php
 session_start();
 if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Letölthető mintafájl kezelése
+if (isset($_GET['template'])) {
+    $type = $_GET['template'];
+
+    function outputCsvTemplate($filename, $rows, $delimiter = ';') {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $filename);
+        // UTF-8 BOM, hogy Excel jól nyissa meg
+        echo "\xEF\xBB\xBF";
+        $out = fopen('php://output', 'w');
+        foreach ($rows as $row) {
+            fputcsv($out, $row, $delimiter);
+        }
+        fclose($out);
+        exit;
+    }
+
+    if ($type === 'szemelyek') {
+        outputCsvTemplate('felveteli_szemelyek_template.csv', [
+            ['oktatasi_azonosito', 'nev', 'szuletesi_ido', 'alt_iskola_om', 'lakcim', 'anyja_neve', 'email', 'telepules'],
+            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen'],
+            ['72770184806', 'Kovacs János', '2005-05-12', '031200', '3780 Edelény xy utca 12', 'Kovacsné', 'kovacs.janos@example.com', 'Edelény'],
+        ]);
+    }
+    if ($type === 'eredmenyek') {
+        outputCsvTemplate('felveteli_eredmenyek_template.csv', [
+            ['oktatasi_azonosito', 'targy_id', 'max_pont_magyar', 'max_pont_matematika'],
+            ['12345678901', '1', '50', '50'],
+            ['12345678901', '2', '50', '50'],
+        ]);
+    }
+    if ($type === 'osszes') {
+        outputCsvTemplate('felveteli_osszes_template.csv', [
+            ['oktatasi_azonosito', 'nev', 'szuletesi_ido', 'alt_iskola_om', 'lakcim', 'anyja_neve', 'email', 'telepules', 'targy_id', 'max_pont_magyar', 'max_pont_matematika'],
+            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen', '1', '50', '50'],
+            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen', '2', '50', '50'],
+        ]);
+    }
+}
+
 if (empty($_SESSION['is_admin'])) {
     header('Location: admin_login.php');
     exit;
@@ -21,9 +62,26 @@ if (empty($_SESSION['is_admin'])) {
         <div class="import-container">
             <form id="uploadForm" class="import-form" method="post" enctype="multipart/form-data" action="upload.php">
         <h1>Excel / CSV adat importálás</h1>
+        <div class="template-links" style="margin-bottom:1rem;">
+            <strong>Minta sablon letöltése:</strong>
+            <a href="import.php?template=szemelyek" class="secondary-btn" style="margin-right:0.5rem;">Tanulók sablon (CSV)</a>
+            <a href="import.php?template=eredmenyek" class="secondary-btn" style="margin-right:0.5rem;">Eredmények sablon (CSV)</a>
+            <a href="import.php?template=osszes" class="secondary-btn">Minden adat sablon (CSV)</a>
+        </div>
+        <div class="template-help">
+            <strong>Fájl formátum:</strong>
+            <p>A rendszer .xlsx, .xls és .csv fájlokat fogad. A leggyakoribb séma:</p>
+            <ul>
+                <li><strong>Tanulók importálása</strong>: <code>oktatasi_azonosito, nev, szuletesi_ido, alt_iskola_om, lakcim, anyja_neve, email, telepules</code></li>
+                <li><strong>Eredmények importálása</strong>: <code>oktatasi_azonosito, targy_id, max_pont_magyar, max_pont_matematika</code></li>
+                <li><strong>Minden adat importálása</strong>: mindkettőből egy fájl, pl. <code>oktatasi_azonosito, nev,szuletesi_ido, alt_iskola_om, lakcim, anyja_neve, email, telepules, targy_id, max_pont_magyar, max_pont_matematika</code></li>
+            </ul>
+            <p>CSV esetén ékezetes adatokhoz UTF-8 vagy Windows-1250 kódolás javasolt; elválasztó: <code>,</code> vagy <code>;</code>.</p>
+        </div>
         <select name="import_type" class="select">
             <option value="szemelyek">Tanulók importálása</option>
             <option value="eredmenyek">Eredmények importálása</option>
+            <option value="osszes">Minden adat importálása</option>
         </select>
 
         <label>

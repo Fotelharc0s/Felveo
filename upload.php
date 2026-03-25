@@ -166,6 +166,10 @@ for ($fi = 0; $fi < $countFiles; $fi++) {
             $count = importSzemelyek($sheet, $rows, $header, $pdo);
         } elseif ($type === 'eredmenyek') {
             $count = importEredmenyek($sheet, $rows, $header, $pdo, $strict);
+        } elseif ($type === 'osszes') {
+            $countSzemelyek = importSzemelyek($sheet, $rows, $header, $pdo);
+            $countEredmenyek = importEredmenyek($sheet, $rows, $header, $pdo, $strict);
+            $count = $countSzemelyek + $countEredmenyek;
         } else {
             throw new Exception("Ismeretlen import típus: $type");
         }
