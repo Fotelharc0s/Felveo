@@ -76,7 +76,7 @@ if (empty($_SESSION['is_admin'])) {
                 <li><strong>Eredmények importálása</strong>: <code>oktatasi_azonosito, targy_id, max_pont_magyar, max_pont_matematika</code></li>
                 <li><strong>Minden adat importálása</strong>: mindkettőből egy fájl, pl. <code>oktatasi_azonosito, nev,szuletesi_ido, alt_iskola_om, lakcim, anyja_neve, email, telepules, targy_id, max_pont_magyar, max_pont_matematika</code></li>
             </ul>
-            <p>CSV esetén ékezetes adatokhoz UTF-8 vagy Windows-1250 kódolás javasolt; elválasztó: <code>,</code> vagy <code>;</code>.</p>
+            <p>CSV esetén ékezetes adatokhoz UTF-8 vagy Windows-1250 kódolás javasolt; elválasztó: <code>,</code> vagy <code>;</code></p>
         </div>
         <select name="import_type" class="select">
             <option value="szemelyek">Tanulók importálása</option>
