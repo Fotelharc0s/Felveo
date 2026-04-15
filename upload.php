@@ -30,8 +30,6 @@ $type = isset($_POST['import_type']) ? (string)$_POST['import_type'] : '';
 $uploaded = $_FILES['excel'];
 $countFiles = is_array($uploaded['tmp_name']) ? count($uploaded['tmp_name']) : 0;
 
-$strict = isset($_POST['strict']) && ($_POST['strict'] == '1' || $_POST['strict'] === 1);
-
 if (!$type) exit("Nincs kiválasztva import típus.");
 
 $summary = ['files' => [], 'imported' => 0, 'skipped' => 0];
@@ -165,10 +163,10 @@ for ($fi = 0; $fi < $countFiles; $fi++) {
         if ($type === 'szemelyek') {
             $count = importSzemelyek($sheet, $rows, $header, $pdo);
         } elseif ($type === 'eredmenyek') {
-            $count = importEredmenyek($sheet, $rows, $header, $pdo, $strict);
+            $count = importEredmenyek($sheet, $rows, $header, $pdo);
         } elseif ($type === 'osszes') {
             $countSzemelyek = importSzemelyek($sheet, $rows, $header, $pdo);
-            $countEredmenyek = importEredmenyek($sheet, $rows, $header, $pdo, $strict);
+            $countEredmenyek = importEredmenyek($sheet, $rows, $header, $pdo);
             $count = $countSzemelyek + $countEredmenyek;
         } else {
             throw new Exception("Ismeretlen import típus: $type");
@@ -227,6 +225,7 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
     $colEmail = $find($header, 'email');
     $colLakcim = $find($header, 'lakcim');
     $colTelepules = $find($header, 'telepules');
+    $colIranyitoszam = $find($header, 'iranyit') ?? $find($header, 'zip');
     $colIskolaOm = $find($header, 'iskola') ?? $find($header, 'om');
 
     $stmt = $pdo->prepare(
@@ -263,7 +262,12 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
         $email = $colEmail ? trim($row[$colEmail] ?? '') : '';
         $lakcim = $colLakcim ? trim($row[$colLakcim] ?? '') : '';
         $telepules = $colTelepules ? trim($row[$colTelepules] ?? '') : '';
+        $iranyitoszam = $colIranyitoszam ? trim($row[$colIranyitoszam] ?? '') : '';
         $iskola_om = $colIskolaOm ? trim($row[$colIskolaOm] ?? '') : '';
+
+        if ($telepules !== '') {
+            ensureTelepulesExists($pdo, $telepules, $iranyitoszam);
+        }
 
         // ensure unique, non-empty email so UNIQUE index doesn't collide
         if ($email === '' || $email === null) {
@@ -325,13 +329,120 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
     return $count;
 }
 
+function ensureTelepulesExists($pdo, $telepules, $iranyitoszam = null) {
+    $telepules = trim((string)$telepules);
+    if ($telepules === '') {
+        return null;
+    }
+    $iranyitoszam = trim((string)$iranyitoszam);
+    if ($iranyitoszam === '') {
+        $iranyitoszam = null;
+    }
+
+    try {
+        $select = $pdo->prepare("SELECT id, iranyitoszam FROM telepulesek WHERE nev = ? LIMIT 1");
+        $select->execute([$telepules]);
+        $existing = $select->fetch(PDO::FETCH_ASSOC);
+        if ($existing) {
+            if (empty($existing['iranyitoszam']) && ($iranyitoszam || !empty($GLOBALS['ZIP_LOOKUP_ENABLED']))) {
+                $finalZip = $iranyitoszam ?: lookupIranyitoszam($telepules);
+                if ($finalZip) {
+                    $update = $pdo->prepare("UPDATE telepulesek SET iranyitoszam = ? WHERE id = ?");
+                    $update->execute([$finalZip, $existing['id']]);
+                    log_msg("Updated telepulesek iranyitoszam for {$telepules}: {$finalZip}");
+                }
+            }
+            return (int)$existing['id'];
+        }
+
+        if (!$iranyitoszam && !empty($GLOBALS['ZIP_LOOKUP_ENABLED'])) {
+            $iranyitoszam = lookupIranyitoszam($telepules);
+        }
+
+        $insert = $pdo->prepare("INSERT INTO telepulesek (nev, iranyitoszam) VALUES (?, ?)");
+        $insert->execute([$telepules, $iranyitoszam]);
+        $newId = (int)$pdo->lastInsertId();
+        log_msg("Inserted telepulesek row id={$newId} nev={$telepules} iranyitoszam={$iranyitoszam}");
+        return $newId;
+    } catch (Exception $e) {
+        log_msg("ensureTelepulesExists failed for {$telepules}: " . $e->getMessage());
+        return null;
+    }
+}
+
+function lookupIranyitoszam($telepules) {
+    global $ZIP_LOOKUP_ENABLED, $ZIP_LOOKUP_PROVIDER, $ZIP_LOOKUP_NOMINATIM_BASE, $ZIP_LOOKUP_USER_AGENT, $ZIP_LOOKUP_TIMEOUT_SECONDS;
+
+    $telepules = trim((string)$telepules);
+    if ($telepules === '' || empty($ZIP_LOOKUP_ENABLED)) {
+        return null;
+    }
+
+    $provider = $ZIP_LOOKUP_PROVIDER ?? 'nominatim';
+    if ($provider !== 'nominatim') {
+        log_msg("lookupIranyitoszam: unsupported provider {$provider}");
+        return null;
+    }
+
+    $base = $ZIP_LOOKUP_NOMINATIM_BASE ?? 'https://nominatim.openstreetmap.org/search';
+    $query = http_build_query([
+        'q' => $telepules . ', Hungary',
+        'countrycodes' => 'hu',
+        'format' => 'json',
+        'addressdetails' => 1,
+        'limit' => 5,
+        'accept-language' => 'hu'
+    ]);
+    $url = $base . '?' . $query;
+    $headers = [
+        'User-Agent: ' . ($ZIP_LOOKUP_USER_AGENT ?? 'Felveo/1.0 (localhost)'),
+        'Accept: application/json'
+    ];
+
+    $body = fetchUrl($url, $headers, $ZIP_LOOKUP_TIMEOUT_SECONDS ?? 10);
+    if (!$body) {
+        log_msg("lookupIranyitoszam: empty response for {$telepules}");
+        return null;
+    }
+
+    $data = json_decode($body, true);
+    if (!is_array($data)) {
+        log_msg("lookupIranyitoszam: invalid json for {$telepules}");
+        return null;
+    }
+
+    foreach ($data as $item) {
+        if (!empty($item['address']['postcode'])) {
+            $zip = trim($item['address']['postcode']);
+            if (preg_match('/^\d{4}$/', $zip)) {
+                log_msg("lookupIranyitoszam: found {$zip} for {$telepules}");
+                return $zip;
+            }
+        }
+    }
+
+    return null;
+}
+
+function fetchUrl($url, $headers = [], $timeout = 10) {
+    $options = [
+        'http' => [
+            'method' => 'GET',
+            'timeout' => $timeout,
+            'header' => implode("\r\n", $headers)
+        ]
+    ];
+    $context = stream_context_create($options);
+    return @file_get_contents($url, false, $context);
+}
 
 
 
 
 
 
-function importEredmenyek($sheet, $rows, $header, $pdo, $strict = false) {
+
+function importEredmenyek($sheet, $rows, $header, $pdo) {
     $count = 0;
 
     $find = function(array $header, string $needle) {
@@ -372,7 +483,7 @@ function importEredmenyek($sheet, $rows, $header, $pdo, $strict = false) {
         if ($colMagyar) {
             $val = $row[$colMagyar] ?? null;
             if ($val !== null && $val !== '') {
-                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'magyar', $val, $elertPontId, $targyStmt, $strict);
+                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'magyar', $val, $elertPontId, $targyStmt);
                 $count += $inserted;
             }
         }
@@ -380,7 +491,7 @@ function importEredmenyek($sheet, $rows, $header, $pdo, $strict = false) {
         if ($colMate) {
             $val = $row[$colMate] ?? null;
             if ($val !== null && $val !== '') {
-                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'matematika', $val, $elertPontId, $targyStmt, $strict);
+                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'matematika', $val, $elertPontId, $targyStmt);
                 $count += $inserted;
             }
         }
@@ -411,7 +522,7 @@ function parseDate($dateStr) {
     return null;
 }
 
-function insertEredmeny($pdo, $oktatasi_azonosito, $targyNev, $elertPont, $elertPontId = null, $targyStmt = null, $strict = false) {
+function insertEredmeny($pdo, $oktatasi_azonosito, $targyNev, $elertPont, $elertPontId = null, $targyStmt = null) {
     if ($elertPont === null || $elertPont === '') return 0;
 
     // normalize numeric score
@@ -433,10 +544,6 @@ function insertEredmeny($pdo, $oktatasi_azonosito, $targyNev, $elertPont, $elert
         $chk->execute([$oktatasi_azonosito]);
         $exists = (bool)$chk->fetchColumn();
         if (!$exists) {
-            if ($strict) {
-                log_msg("insertEredmeny: strict mode - missing szemely for okt={$oktatasi_azonosito}");
-                throw new Exception("Strict import: szemely hiányzik az oktatasi_azonosito={$oktatasi_azonosito}");
-            }
             $insSzem = $pdo->prepare(
                 "INSERT INTO szemelyek (oktatasi_azonosito, nev, szuletesi_ido, anyja_neve, lakcim, email, jelszo_hash, is_placeholder)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)"

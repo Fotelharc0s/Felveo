@@ -844,7 +844,8 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     overflow-x: auto;
 }
 
-.students-list table {
+.students-list table,
+.data-table {
     width: 100%;
     border-collapse: collapse;
     background: var(--card-bg);
@@ -854,7 +855,24 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     min-width: 800px;
 }
 
-.students-list thead {
+.data-table th,
+.data-table td,
+.students-list th,
+.students-list td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.data-table th,
+.students-list th {
+    background: var(--bg);
+    font-weight: 700;
+}
+
+.students-list thead,
+.data-table thead {
     background: var(--bg);
     border-bottom: 2px solid var(--border);
 }

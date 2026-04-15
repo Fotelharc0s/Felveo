@@ -60,6 +60,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
         $message .= "ℹ Dokumentumok tábla már létezik<br>";
     }
 
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `telepulesek` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `iranyitoszam` varchar(10) DEFAULT NULL,
+          `nev` varchar(100) NOT NULL,
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `nev` (`nev`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci");
+        $message .= "✓ Települések tábla létrehozva<br>";
+    } catch (Exception $e) {
+        $message .= "ℹ Települések tábla már létezik<br>";
+    }
+
     // 3. Beállítások tábla
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `beallitasok` (

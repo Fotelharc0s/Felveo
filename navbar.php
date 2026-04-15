@@ -14,6 +14,7 @@ $current = basename($_SERVER['PHP_SELF']);
         <?php if ($is_admin): ?>
             <!-- ADMIN MENÜ -->
             <a href="admin_dashboard.php" class="<?php echo $current === 'admin_dashboard.php' ? 'primary' : ''; ?>">👥 Diákok</a>
+            <a href="admin_telepulesek.php" class="<?php echo $current === 'admin_telepulesek.php' ? 'primary' : ''; ?>">🏘️ Települések</a>
             <a href="admin_settings.php" class="<?php echo $current === 'admin_settings.php' ? 'primary' : ''; ?>">⚙️ Beállítások</a>
             <a href="import.php" class="<?php echo $current === 'import.php' ? 'primary' : ''; ?>">📤 Import</a>
             <a href="admin_change_password.php" class="<?php echo $current === 'admin_change_password.php' ? 'primary' : ''; ?>">🔑 Jelszó</a>
