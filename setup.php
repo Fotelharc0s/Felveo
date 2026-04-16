@@ -4,43 +4,107 @@
  * Nyisd meg böngészőben: http://localhost/Felveo-main/setup.php
  */
 
-require 'config.php';
-
 $message = '';
 $success = false;
+$pdo = null;
 
-// biztosítjuk, hogy a fájlok feltöltéséhez szükséges mappa létezik
+function createDatabaseIfMissing(string $host, string $user, string $password, string $dbname, string &$message): ?PDO {
+    $dsnWithoutDb = "mysql:host={$host};charset=utf8mb4";
+    try {
+        $tmpPdo = new PDO($dsnWithoutDb, $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $tmpPdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbname}` CHARACTER SET utf8mb4 COLLATE utf8mb4_hungarian_ci");
+        $message .= "✓ Adatbázis `{$dbname}` létrehozva vagy már létezik<br>";
+        return $tmpPdo;
+    } catch (PDOException $inner) {
+        $message .= "⚠ Adatbázis létrehozása nem sikerült: " . htmlspecialchars($inner->getMessage()) . "<br>";
+        return null;
+    }
+}
+
+try {
+    require 'config.php';
+} catch (Exception $e) {
+    $message .= "⚠ Nem sikerült kapcsolódni az adatbázishoz: " . htmlspecialchars($e->getMessage()) . "<br>";
+    if (!empty($host) && !empty($user) && !empty($dbname) && strpos($e->getMessage(), 'Unknown database') !== false) {
+        createDatabaseIfMissing($host, $user, $password, $dbname, $message);
+        try {
+            require 'config.php';
+        } catch (Exception $reconnectException) {
+            $message .= "⚠ Újrakapcsolódás nem sikerült: " . htmlspecialchars($reconnectException->getMessage()) . "<br>";
+        }
+    }
+}
+
 if (!is_dir('uploads/dokumentumok')) {
     if (mkdir('uploads/dokumentumok', 0755, true)) {
         $message .= "✓ Feltöltési mappa létrehozva<br>";
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
+function tableExists(PDO $pdo, string $table): bool {
+    $stmt = $pdo->query("SHOW TABLES LIKE " . $pdo->quote($table));
+    return $stmt && $stmt->fetchColumn() !== false;
+}
+
+function importDatabaseSchema(PDO $pdo, string $path, string &$message): bool {
+    if (!file_exists($path)) {
+        $message .= "⚠ SQL fájl nem található: {$path}<br>";
+        return false;
+    }
+
+    $sql = file_get_contents($path);
+    if ($sql === false) {
+        $message .= "⚠ Nem sikerült beolvasni az SQL fájlt.<br>";
+        return false;
+    }
+
+    $statements = array_filter(array_map('trim', explode(';', $sql)));
+    foreach ($statements as $statement) {
+        if ($statement === '') {
+            continue;
+        }
+        try {
+            $pdo->exec($statement);
+        } catch (PDOException $e) {
+            $message .= "ℹ SQL végrehajtás hiba: " . htmlspecialchars($e->getMessage()) . "<br>";
+        }
+    }
+    return true;
+}
+
+$needsFreshInstall = $pdo instanceof PDO && (
+    !tableExists($pdo, 'szemelyek') ||
+    !tableExists($pdo, 'targyak') ||
+    !tableExists($pdo, 'beallitasok')
+);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install']) && $pdo instanceof PDO) {
+    if ($needsFreshInstall) {
+        $message .= "📥 Friss telepítés: sémát importálunk az assets/felveteli.sql fájlból...<br>";
+        importDatabaseSchema($pdo, __DIR__ . '/assets/felveteli.sql', $message);
+    }
+
     try {
-        // 0. Település oszlop a szemelyek táblához
         $pdo->exec("ALTER TABLE `szemelyek` ADD COLUMN `telepules` varchar(100) DEFAULT NULL");
         $message .= "✓ Település oszlop hozzáadva a szemelyek táblához<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Település oszlop már létezik<br>";
     }
 
     try {
-        // 1. Új oszlopok az eredmenyek táblához
         $pdo->exec("ALTER TABLE `eredmenyek` ADD COLUMN `max_pont_magyar` INT(11) DEFAULT 50");
         $message .= "✓ Magyar max pont oszlop hozzáadva<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Magyar max pont oszlop már létezik<br>";
     }
 
     try {
         $pdo->exec("ALTER TABLE `eredmenyek` ADD COLUMN `max_pont_matematika` INT(11) DEFAULT 50");
         $message .= "✓ Matematika max pont oszlop hozzáadva<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Matematika max pont oszlop már létezik<br>";
     }
 
-    // 2. Dokumentumok tábla
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `dokumentumok` (
           `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -56,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
           FOREIGN KEY (`targy_id`) REFERENCES `targyak` (`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci");
         $message .= "✓ Dokumentumok tábla létrehozva<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Dokumentumok tábla már létezik<br>";
     }
 
@@ -69,11 +133,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
           UNIQUE KEY `nev` (`nev`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci");
         $message .= "✓ Települések tábla létrehozva<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Települések tábla már létezik<br>";
     }
 
-    // 3. Beállítások tábla
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `beallitasok` (
           `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -84,18 +147,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
           PRIMARY KEY (`id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci");
         $message .= "✓ Beállítások tábla létrehozva<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Beállítások tábla már létezik<br>";
     }
 
-    // 4. Alapértelmezett beállítások beszúrása
     try {
         $pdo->exec("INSERT IGNORE INTO `beallitasok` (`nev`, `ertek`, `leiras`) VALUES
             ('max_pont_magyar_alapertelmezett', '50', 'Alapértelmezett maximum pontszám magyar'),
             ('max_pont_matematika_alapertelmezett', '50', 'Alapértelmezett maximum pontszám matematika'),
             ('dokumentumok_mappa', 'uploads/dokumentumok/', 'Feltöltött dokumentumok mappája')");
         $message .= "✓ Alapértelmezett beállítások betöltve<br>";
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $message .= "ℹ Beállítások már léteznek<br>";
     }
 
@@ -194,12 +256,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
                 ✓ Dokumentumok tábla létrehozása<br>
                 ✓ Beállítások tábla létrehozása<br>
             </div>
-            
-            <form method="POST">
-                <button type="submit" name="install" value="1">
-                    ✅ ADATBÁZIS FRISSÍTÉSE
-                </button>
-            </form>
+
+            <?php if ($pdo instanceof PDO): ?>
+                <form method="POST">
+                    <button type="submit" name="install" value="1">
+                        ✅ ADATBÁZIS FRISSÍTÉSE
+                    </button>
+                </form>
+            <?php else: ?>
+                <div class="message" style="background: #fff3cd; border-left-color: #ff9800;">
+                    <strong>Figyelem:</strong> Előbb hozd létre a `felveteli` adatbázist és ellenőrizd a `config.php` beállításait, majd töltsd újra az oldalt.
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </body>

@@ -21,12 +21,13 @@ Nyisd meg a `config.php` fájlt és állítsd be az adatbázis elérési adatait
 $host = "localhost";      // DB host
 $user = "root";           // DB user
 $password = "";           // DB jelszó
-$dbname = "felveo";       // DB név
+$dbname = "felveteli";    // DB név
 ```
+> Ha a `felveteli` adatbázis még nem létezik, hozd létre MySQL-ben vagy phpMyAdmin-ban.
 
 ### 3. Séma inicializálása
 Nyisd meg a böngészőt és menj ide: `http://localhost/Felveo-main/setup.php`  
-A `setup.php` automatikusan létrehozza a szükséges adatbázis táblázatokat. Kövesd a képernyőn megjelenő utasításokat.
+A `setup.php` automatikusan létrehozza vagy frissíti a szükséges adatbázis táblázatokat az `assets/felveteli.sql` alapján. Ha a `felveteli` adatbázis nem létezik, a script megpróbálja létrehozni, amennyiben a MySQL felhasználó jogosult rá. Kövesd a képernyőn megjelenő utasításokat.
 
 ### 4. Függőségek telepítése (ha szükséges)
 Ha a `vendor/` mappa hiányzik, telepítsd Composer-rel:
@@ -64,13 +65,14 @@ composer install
 - `admin_login.php` — Admin bejelentkezés
 - `admin_dashboard.php` — Studentek listája, szűrés, manipuláció
 - `admin_change_password.php` — Jelszó módosítás
+- `admin_telepulesek.php` — Település alapú lekérdezés és szűrés
 - `admin_settings.php` — Egyéb beállítások (ha van)
+- `admin_logout.php` — Admin kijelentkezés
 - `assets/admin_credentials.php` — Admin felhasználónév és jelszó tárolása
 
 ### Adatfeldolgozás
 - `import.php` — Excel import felület és logika
 - `upload.php` — Fájlfeltöltés API
-- `placeholders.php`, `placeholders_update.php` — Placeholder/template kezelés
 
 ### Segéd és egyéb
 - `index.php` — Kezdőoldal / nyilvános felület
@@ -82,7 +84,6 @@ composer install
 - `vendor/` — Composer függőségek (PHPSpreadsheet, stb.)
 - `assets/` — Statikus erőforrások, admin hitelesítő adatok
 - `uploads/dokumentumok/` — Importált dokumentumok (ne töröld)
-- `samples/` — (nem használt, gitignore-ban kizárva)
 
 ## Testreszabás és fejlesztés
 
@@ -118,12 +119,12 @@ A `cleanup.ps1` PowerShell script segítségével eltávolíthatók a felesleges
 ```powershell
 .\cleanup.ps1              # Interaktív mód: listáz és kérdez törlés előtt
 .\cleanup.ps1 -Force       # Közvetlen törlés kérdezés nélkül
-.\cleanup.ps1 -RemoveSamples # samples/ könyvtár törlése
+.\cleanup.ps1 -RemoveSamples # samples/ könyvtár törlése, ha létezik
 .\cleanup.ps1 -RemoveUploads # uploads/ könyvtár törlése (FIGYELJ!)
 ```
 
 ### .gitignore
-A `.gitignore` fájl kizárja a helyi konfigurációt és futási műanyagokat (`config.php`, `import_debug.log`, `uploads/`), valamint a naplókat (`*.log`), SQL dumpokat (`*.sql`) és a `samples/` mappát a verziókezelésből.
+A `.gitignore` fájl kizárja a helyi konfigurációt és futási artefaktumokat (`config.php`, `import_debug.log`, `uploads/`), valamint a naplókat (`*.log`) és SQL dumpokat (`*.sql`). Ha a helyi környezetben létrejön, a `/samples/` mappa is ki van zárva.
 
 ## Hibaelhárítás
 
