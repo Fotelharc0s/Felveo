@@ -65,9 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Ensure admin login/logout link
             let adminLink = findLink('admin_login.php') || findLink('admin_logout.php');
             if (isAdmin) {
-                // show import and placeholders
                 const imp = findLink('import.php'); if (imp) imp.style.display = '';
-                const ph = findLink('placeholders.html'); if (ph) ph.style.display = '';
                 // replace login with logout
                 if (adminLink && adminLink.getAttribute('href') === 'admin_login.php') {
                     adminLink.textContent = 'Kijelentkezés';
@@ -76,9 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const a = document.createElement('a'); a.href = 'admin_logout.php'; a.textContent = 'Kijelentkezés'; linksContainer.appendChild(a);
                 }
             } else {
-                // hide import and placeholders for non-admin
                 const imp = findLink('import.php'); if (imp) imp.style.display = 'none';
-                const ph = findLink('placeholders.html'); if (ph) ph.style.display = 'none';
                 // ensure login link
                 if (adminLink && adminLink.getAttribute('href') === 'admin_logout.php') {
                     adminLink.textContent = 'Admin bejelentkezés';
