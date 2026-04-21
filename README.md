@@ -12,34 +12,35 @@ Rövid, karbantartott leírás a jelenlegi állapot alapján. A README célja, h
 
 ## Gyors telepítés (lokálisan, XAMPP/Laragon)
 
-### 1. Alapkönyvtár beállítása
+### 1. Projekt mappa
 Másold a projekt mappát a webszerver `htdocs` (XAMPP) vagy `www` (Laragon) könyvtárába.
 
-### 2. Adatbázis beállítása
-Nyisd meg a `config.php` fájlt és állítsd be az adatbázis elérési adatait:
-```php
-$host = "localhost";      // DB host
-$user = "root";           // DB user
-$password = "";           // DB jelszó
-$dbname = "felveteli";    // DB név
+### 2. 🚀 Setup varázsló (LEGEGYSZERŰBB MÓD)
+Nyisd meg a böngésződet és menj ide:
 ```
-> Ha a `felveteli` adatbázis még nem létezik, hozd létre MySQL-ben vagy phpMyAdmin-ban.
+http://localhost/Felveo-main/setup.php
+```
 
-### 3. Séma inicializálása
-Nyisd meg a böngészőt és menj ide: `http://localhost/Felveo-main/setup.php`  
-A `setup.php` automatikusan létrehozza vagy frissíti a szükséges adatbázis táblázatokat az `assets/felveteli.sql` alapján. Ha a `felveteli` adatbázis nem létezik, a script megpróbálja létrehozni, amennyiben a MySQL felhasználó jogosult rá. Kövesd a képernyőn megjelenő utasításokat.
+A setup varázsló **3 egyszerű lépésben** végigvisz az összes szükséges beállításon:
+1. **Lépés 1:** Add meg az adatbázis elérési adatait (host, felhasználónév, jelszó, adatbázis neve)
+   - Általában működik: `localhost`, `root`, szokott jelszó (vagy üresen)
+   - A `felveteli` adatbázis automatikusan létrejön
+2. **Lépés 2:** Kattints az "Adatbázis telepítése" gombra
+   - Az összes tábla és séma automatikusan létrehozódik
+3. **Lépés 3:** Kész!
+   - Az admin hitelesítő adatok: `admin` / `secret`
+   - **FONTOS:** Első bejelentkezés után azonnal módosítsd a jelszót!
 
-### 4. Függőségek telepítése (ha szükséges)
-Ha a `vendor/` mappa hiányzik, telepítsd Composer-rel:
+### 3. Admin bejelentkezés
+- **Admin oldal:** `http://localhost/Felveo-main/admin_login.php`
+- **Jelszó módosítás:** Az admin belépés után elérhető a `admin_change_password.php` oldal
+
+### Alternatív telepítés (Composer függőségek)
+Ha a `vendor/` mappa hiányzik:
 ```powershell
 cd C:\xampp\htdocs\Felveo-main
 composer install
 ```
-
-### 5. Admin bejelentkezés
-- **Admin oldal:** `http://localhost/Felveo-main/admin_login.php`
-- **Hitelesítő adatok:** Az `assets/admin_credentials.php` fájlban vannak tárolva
-- **Jelszó módosítás:** Az admin belépés után elérhető a `admin_change_password.php` oldal (navbar linkből vagy közvetlen URL)
 
 ## Importálás
 
