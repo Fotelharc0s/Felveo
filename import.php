@@ -22,22 +22,33 @@ if (isset($_GET['template'])) {
     if ($type === 'szemelyek') {
         outputCsvTemplate('felveteli_szemelyek_template.csv', [
             ['oktatasi_azonosito', 'nev', 'szuletesi_ido', 'alt_iskola_om', 'lakcim', 'anyja_neve', 'email', 'telepules'],
-            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen'],
-            ['72770184806', 'Kovacs János', '2005-05-12', '031200', '3780 Edelény xy utca 12', 'Kovacsné', 'kovacs.janos@example.com', 'Edelény'],
+            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen'],
+            ['72770184806', 'Kovács János', '2005-05-12', '031200', '3780 Edelény xy utca 12', 'Kovácsné', 'kovacs.janos@example.com', 'Edelény'],
+        ]);
+    }
+    if ($type === 'altalanos_iskolak') {
+        outputCsvTemplate('felveteli_altalanos_iskolak_template.csv', [
+            ['om_azonosito', 'nev', 'cim', 'telefonszam', 'email', 'iranyitoszam', 'telepules'],
+            ['031200', 'Edelényi Általános Iskola', 'Borsodi utca 2.', '06201234567', 'edeleny@gmail.com', '3780', 'Edelény'],
+            ['034500', 'Debreceni Általános Iskola', 'Kossuth Lajos utca 1.', '06301234567', 'debrecen@gmail.com', '4000', 'Debrecen'],
         ]);
     }
     if ($type === 'eredmenyek') {
         outputCsvTemplate('felveteli_eredmenyek_template.csv', [
-            ['oktatasi_azonosito', 'targy_id', 'max_pont_magyar', 'max_pont_matematika'],
-            ['12345678901', '1', '50', '50'],
-            ['12345678901', '2', '50', '50'],
+            ['oktatasi_azonosito', 'targy_id', 'max_pont_magyar', 'max_pont_matematika', 'elert_pont'],
+            ['12345678901', '1', '50', '50', '45'],
+            ['12345678901', '2', '50', '50', '48'],
+            ['72770184806', '1', '50', '50', '42'],
+            ['72770184806', '2', '50', '50', '47'],
         ]);
     }
     if ($type === 'osszes') {
         outputCsvTemplate('felveteli_osszes_template.csv', [
-            ['oktatasi_azonosito', 'nev', 'szuletesi_ido', 'alt_iskola_om', 'lakcim', 'anyja_neve', 'email', 'telepules', 'targy_id', 'max_pont_magyar', 'max_pont_matematika'],
-            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen', '1', '50', '50'],
-            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen', '2', '50', '50'],
+            ['oktatasi_azonosito', 'nev', 'szuletesi_ido', 'alt_iskola_om', 'lakcim', 'anyja_neve', 'email', 'telepules', 'targy_id', 'max_pont_magyar', 'max_pont_matematika', 'elert_pont'],
+            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen', '1', '50', '50', '45'],
+            ['12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'nagy.anna@example.com', 'Debrecen', '2', '50', '50', '48'],
+            ['72770184806', 'Kovács János', '2005-05-12', '031200', '3780 Edelény xy utca 12', 'Kovácsné', 'kovacs.janos@example.com', 'Edelény', '1', '50', '50', '42'],
+            ['72770184806', 'Kovács János', '2005-05-12', '031200', '3780 Edelény xy utca 12', 'Kovácsné', 'kovacs.janos@example.com', 'Edelény', '2', '50', '50', '47'],
         ]);
     }
 }
@@ -65,6 +76,7 @@ if (empty($_SESSION['is_admin'])) {
         <div class="template-links" style="margin-bottom:1rem;">
             <strong>Minta sablon letöltése:</strong>
             <a href="import.php?template=szemelyek" class="secondary-btn" style="margin-right:0.5rem;">Tanulók sablon (CSV)</a>
+            <a href="import.php?template=altalanos_iskolak" class="secondary-btn" style="margin-right:0.5rem;">Általános iskolák sablon (CSV)</a>
             <a href="import.php?template=eredmenyek" class="secondary-btn" style="margin-right:0.5rem;">Eredmények sablon (CSV)</a>
             <a href="import.php?template=osszes" class="secondary-btn">Minden adat sablon (CSV)</a>
         </div>
@@ -73,14 +85,16 @@ if (empty($_SESSION['is_admin'])) {
             <p>A rendszer .xlsx, .xls és .csv fájlokat fogad. A leggyakoribb séma:</p>
             <ul>
                 <li><strong>Tanulók importálása</strong>: <code>oktatasi_azonosito, nev, szuletesi_ido, alt_iskola_om, lakcim, anyja_neve, email, telepules</code></li>
-                <li><strong>Eredmények importálása</strong>: <code>oktatasi_azonosito, targy_id, max_pont_magyar, max_pont_matematika</code></li>
-                <li><strong>Minden adat importálása</strong>: mindkettőből egy fájl, pl. <code>oktatasi_azonosito, nev,szuletesi_ido, alt_iskola_om, lakcim, anyja_neve, email, telepules, targy_id, max_pont_magyar, max_pont_matematika</code></li>
+                <li><strong>Általános iskolák importálása</strong>: <code>om_azonosito, nev, cim, telefonszam, email, iranyitoszam, telepules</code></li>
+                <li><strong>Eredmények importálása</strong>: <code>oktatasi_azonosito, targy_id, max_pont_magyar, max_pont_matematika, elert_pont</code></li>
+                <li><strong>Minden adat importálása</strong>: mindkettőből egy fájl, pl. <code>oktatasi_azonosito, nev,szuletesi_ido, alt_iskola_om, lakcim, anyja_neve, email, telepules, targy_id, max_pont_magyar, max_pont_matematika, elert_pont</code></li>
             </ul>
             <p>A rendszer automatikusan kezeli a településeket, és ha nincs irányítószám, akkor megpróbálja megtalálni azt a háttérben.</p>
             <p>CSV esetén ékezetes adatokhoz UTF-8 vagy Windows-1250 kódolás javasolt; elválasztó: <code>,</code> vagy <code>;</code></p>
         </div>
         <select name="import_type" class="select">
             <option value="szemelyek">Tanulók importálása</option>
+            <option value="altalanos_iskolak">Általános iskolák importálása</option>
             <option value="eredmenyek">Eredmények importálása</option>
             <option value="osszes">Minden adat importálása</option>
         </select>

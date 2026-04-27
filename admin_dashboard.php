@@ -61,6 +61,11 @@ $students_stmt = $pdo->prepare("
 $students_stmt->execute($params);
 $students = $students_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Általános iskolák listázása
+$schools_stmt = $pdo->prepare("SELECT * FROM altalanos_iskolak ORDER BY nev");
+$schools_stmt->execute();
+$schools = $schools_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Diák módosítása
 if ($action === 'edit' && isset($_GET['okt'])) {
     $okt = $_GET['okt'];
@@ -212,6 +217,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
     }
+
+    if ($_POST['action'] === 'update_school') {
+        $om = $_POST['om_azonosito'];
+        $nev = $_POST['nev'];
+        $cim = $_POST['cim'];
+        $telefonszam = $_POST['telefonszam'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $iranyitoszam = $_POST['iranyitoszam'] ?? '';
+        $telepules = $_POST['telepules'] ?? '';
+
+        try {
+            $update_stmt = $pdo->prepare("
+                UPDATE altalanos_iskolak
+                SET nev = ?, cim = ?, telefonszam = ?, email = ?, iranyitoszam = ?, telepules = ?
+                WHERE om_azonosito = ?
+            ");
+            $update_stmt->execute([$nev, $cim, $telefonszam ?: null, $email ?: null, $iranyitoszam ?: null, $telepules ?: null, $om]);
+            $message = '✓ Iskola adatai sikeresen módosítva!';
+        } catch (Exception $e) {
+            $message = '✗ Hiba: ' . $e->getMessage();
+        }
+    }
+
+    if ($_POST['action'] === 'add_school') {
+        $om = $_POST['om_azonosito'];
+        $nev = $_POST['nev'];
+        $cim = $_POST['cim'];
+        $telefonszam = $_POST['telefonszam'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $iranyitoszam = $_POST['iranyitoszam'] ?? '';
+        $telepules = $_POST['telepules'] ?? '';
+
+        try {
+            $insert_stmt = $pdo->prepare("
+                INSERT INTO altalanos_iskolak (om_azonosito, nev, cim, telefonszam, email, iranyitoszam, telepules)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ");
+            $insert_stmt->execute([$om, $nev, $cim, $telefonszam ?: null, $email ?: null, $iranyitoszam ?: null, $telepules ?: null]);
+            $message = '✓ Új iskola sikeresen hozzáadva!';
+        } catch (Exception $e) {
+            $message = '✗ Hiba: ' . $e->getMessage();
+        }
+    }
 }
 
 ?>
@@ -225,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 </head>
 <body>
     <?php require 'navbar.php'; ?>
-    
+
     <div class="admin-container">
         <div class="header">
             <h1>📊 Admin felület</h1>
@@ -237,7 +285,159 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             </div>
         <?php endif; ?>
 
-        <?php if ($action === 'edit' && isset($student)): ?>
+        <?php if ($action === 'edit_school' && isset($_GET['om'])): ?>
+            <?php
+            $om = $_GET['om'];
+            $school_stmt = $pdo->prepare("SELECT * FROM altalanos_iskolak WHERE om_azonosito = ?");
+            $school_stmt->execute([$om]);
+            $school = $school_stmt->fetch(PDO::FETCH_ASSOC);
+            ?>
+            <!-- Iskola szerkesztő -->
+            <div class="edit-form-wrapper">
+                <h2><?php echo htmlspecialchars($school['nev']); ?> - Módosítás</h2>
+
+                <form method="POST" class="form-section">
+                    <input type="hidden" name="action" value="update_school">
+                    <input type="hidden" name="om_azonosito" value="<?php echo $school['om_azonosito']; ?>">
+
+                    <div class="form-group">
+                        <label>OM Azonosító:</label>
+                        <input type="text" value="<?php echo $school['om_azonosito']; ?>" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Név:</label>
+                        <input type="text" name="nev" value="<?php echo htmlspecialchars($school['nev']); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cím:</label>
+                        <input type="text" name="cim" value="<?php echo htmlspecialchars($school['cim']); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Telefonszám:</label>
+                        <input type="text" name="telefonszam" value="<?php echo htmlspecialchars($school['telefonszam'] ?? ''); ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" name="email" value="<?php echo htmlspecialchars($school['email'] ?? ''); ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Irányítószám:</label>
+                        <input type="text" name="iranyitoszam" value="<?php echo htmlspecialchars($school['iranyitoszam'] ?? ''); ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Település:</label>
+                        <input type="text" name="telepules" value="<?php echo htmlspecialchars($school['telepules'] ?? ''); ?>">
+                    </div>
+
+                    <button type="submit" class="btn-success">💾 Módosítások mentése</button>
+                </form>
+
+                <div class="back-button-wrapper">
+                    <a href="admin_dashboard.php?action=schools" class="btn-secondary">← Vissza az iskolák listájához</a>
+                </div>
+            </div>
+
+        <?php elseif ($action === 'add_school'): ?>
+            <!-- Új iskola hozzáadása -->
+            <div class="edit-form-wrapper">
+                <h2>Új általános iskola hozzáadása</h2>
+
+                <form method="POST" class="form-section">
+                    <input type="hidden" name="action" value="add_school">
+
+                    <div class="form-group">
+                        <label>OM Azonosító:</label>
+                        <input type="text" name="om_azonosito" required pattern="\d{6}" title="6 számjegy">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Név:</label>
+                        <input type="text" name="nev" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cím:</label>
+                        <input type="text" name="cim" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Telefonszám:</label>
+                        <input type="text" name="telefonszam">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" name="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Irányítószám:</label>
+                        <input type="text" name="iranyitoszam">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Település:</label>
+                        <input type="text" name="telepules">
+                    </div>
+
+                    <button type="submit" class="btn-success">➕ Iskola hozzáadása</button>
+                </form>
+
+                <div class="back-button-wrapper">
+                    <a href="admin_dashboard.php?action=schools" class="btn-secondary">← Vissza az iskolák listájához</a>
+                </div>
+            </div>
+
+        <?php elseif ($action === 'schools'): ?>
+            <!-- Iskolák listája -->
+            <h2>🏫 Általános iskolák kezelése</h2>
+
+            <div class="schools-list">
+                <div class="action-buttons">
+                    <a href="?action=add_school" class="btn-success">➕ Új iskola hozzáadása</a>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OM Azonosító</th>
+                            <th>Név</th>
+                            <th>Cím</th>
+                            <th>Település</th>
+                            <th>Telefonszám</th>
+                            <th>Email</th>
+                            <th>Műveletek</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($schools as $school): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($school['om_azonosito']); ?></td>
+                                <td><?php echo htmlspecialchars($school['nev']); ?></td>
+                                <td><?php echo htmlspecialchars($school['cim']); ?></td>
+                                <td><?php echo htmlspecialchars($school['telepules'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($school['telefonszam'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($school['email'] ?? '-'); ?></td>
+                                <td>
+                                    <a href="?action=edit_school&om=<?php echo urlencode($school['om_azonosito']); ?>" class="edit-btn">Módosítás</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="back-button-wrapper">
+                <a href="admin_dashboard.php" class="btn-secondary">← Vissza a főoldalra</a>
+            </div>
+
+        <?php elseif ($action === 'edit' && isset($student)): ?>
             <!-- Diák szerkesztő -->
             <div class="edit-form-wrapper">
                 <h2><?php echo htmlspecialchars($student['nev']); ?> - Módosítás</h2>
@@ -366,8 +566,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             </div>
 
         <?php else: ?>
-            <!-- Diákok listája -->
-            <h2>👥 Diákok módosítása</h2>
+            <!-- Főoldal navigáció -->
+            <div class="main-navigation">
+                <h2>👥 Diákok módosítása</h2>
+                <div class="nav-links">
+                    <a href="?action=schools" class="btn-info">🏫 Iskolák kezelése</a>
+                </div>
+            </div>
             
             <!-- Szűrési form -->
             <div class="filter-form">

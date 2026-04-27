@@ -162,6 +162,8 @@ for ($fi = 0; $fi < $countFiles; $fi++) {
         $pdo->beginTransaction();
         if ($type === 'szemelyek') {
             $count = importSzemelyek($sheet, $rows, $header, $pdo);
+        } elseif ($type === 'altalanos_iskolak') {
+            $count = importAltalanosIskolak($sheet, $rows, $header, $pdo);
         } elseif ($type === 'eredmenyek') {
             $count = importEredmenyek($sheet, $rows, $header, $pdo);
         } elseif ($type === 'osszes') {
@@ -267,6 +269,15 @@ function importSzemelyek($sheet, $rows, $header, $pdo) {
 
         if ($telepules !== '') {
             ensureTelepulesExists($pdo, $telepules, $iranyitoszam);
+        } elseif ($iskola_om !== '') {
+            // Ha nincs telepules, de van iskola, akkor az iskola telepuleset hasznaljuk
+            $iskolaStmt = $pdo->prepare("SELECT telepules FROM altalanos_iskolak WHERE om_azonosito = ?");
+            $iskolaStmt->execute([$iskola_om]);
+            $iskolaTelepules = $iskolaStmt->fetchColumn();
+            if ($iskolaTelepules) {
+                $telepules = $iskolaTelepules;
+                ensureTelepulesExists($pdo, $telepules, null);
+            }
         }
 
         // ensure unique, non-empty email so UNIQUE index doesn't collide
@@ -461,6 +472,9 @@ function importEredmenyek($sheet, $rows, $header, $pdo) {
 
     $colMagyar = $find($header, 'magyar');
     $colMate = $find($header, 'matemat');
+    $colElertPont = $find($header, 'elert');
+    $colMaxMagyar = $find($header, 'max_pont_magyar');
+    $colMaxMate = $find($header, 'max_pont_matematika');
 
     // cache targyak
     $targyStmt = $pdo->prepare("SELECT id FROM targyak WHERE nev = ?");
@@ -480,10 +494,35 @@ function importEredmenyek($sheet, $rows, $header, $pdo) {
             continue;
         }
 
+        $elertPont = null;
+        if ($colElertPont) {
+            $val = $row[$colElertPont] ?? null;
+            if ($val !== null && $val !== '') {
+                $elertPont = $val;
+            }
+        }
+
+        $maxMagyar = null;
+        if ($colMaxMagyar) {
+            $val = $row[$colMaxMagyar] ?? null;
+            if ($val !== null && $val !== '') {
+                $maxMagyar = $val;
+            }
+        }
+
+        $maxMate = null;
+        if ($colMaxMate) {
+            $val = $row[$colMaxMate] ?? null;
+            if ($val !== null && $val !== '') {
+                $maxMate = $val;
+            }
+        }
+
         if ($colMagyar) {
             $val = $row[$colMagyar] ?? null;
             if ($val !== null && $val !== '') {
-                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'magyar', $val, $elertPontId, $targyStmt);
+                $elertPontMagyar = $colElertPont ? ($row[$colElertPont] ?? null) : null;
+                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'magyar', $elertPontMagyar, $elertPontId, $targyStmt, $maxMagyar, $maxMate);
                 $count += $inserted;
             }
         }
@@ -491,7 +530,8 @@ function importEredmenyek($sheet, $rows, $header, $pdo) {
         if ($colMate) {
             $val = $row[$colMate] ?? null;
             if ($val !== null && $val !== '') {
-                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'matematika', $val, $elertPontId, $targyStmt);
+                $elertPontMate = $colElertPont ? ($row[$colElertPont] ?? null) : null;
+                $inserted = insertEredmeny($pdo, $oktatasi_azonosito, 'matematika', $elertPontMate, $elertPontId, $targyStmt, $maxMagyar, $maxMate);
                 $count += $inserted;
             }
         }
@@ -522,7 +562,7 @@ function parseDate($dateStr) {
     return null;
 }
 
-function insertEredmeny($pdo, $oktatasi_azonosito, $targyNev, $elertPont, $elertPontId = null, $targyStmt = null) {
+function insertEredmeny($pdo, $oktatasi_azonosito, $targyNev, $elertPont, $elertPontId = null, $targyStmt = null, $maxMagyar = null, $maxMate = null) {
     if ($elertPont === null || $elertPont === '') return 0;
 
     // normalize numeric score
@@ -600,5 +640,97 @@ function insertEredmeny($pdo, $oktatasi_azonosito, $targyNev, $elertPont, $elert
     $insPont = $pdo->prepare("INSERT INTO pontok (eredmeny_id, ponttipus_id, ertek) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ertek = VALUES(ertek)");
     $insPont->execute([$eredmeny_id, $elertPontId, (int)$elertPont]);
     log_msg("insertEredmeny: set pont for eredmeny_id={$eredmeny_id}, ponttipus_id={$elertPontId}, ertek=" . (int)$elertPont);
+
+    // Update max pontok if provided
+    if ($targyNev === 'magyar' && $maxMagyar !== null) {
+        $updateMax = $pdo->prepare("UPDATE eredmenyek SET max_pont_magyar = ? WHERE id = ?");
+        $updateMax->execute([(int)$maxMagyar, $eredmeny_id]);
+        log_msg("insertEredmeny: set max_pont_magyar={$maxMagyar} for eredmeny_id={$eredmeny_id}");
+    } elseif ($targyNev === 'matematika' && $maxMate !== null) {
+        $updateMax = $pdo->prepare("UPDATE eredmenyek SET max_pont_matematika = ? WHERE id = ?");
+        $updateMax->execute([(int)$maxMate, $eredmeny_id]);
+        log_msg("insertEredmeny: set max_pont_matematika={$maxMate} for eredmeny_id={$eredmeny_id}");
+    }
+
     return 1;
+}
+
+function importAltalanosIskolak($sheet, $rows, $header, $pdo) {
+    $count = 0;
+
+    $find = function(array $header, string $needle) {
+        $needle = strtolower($needle);
+        foreach ($header as $k => $col) {
+            if (strpos($k, $needle) !== false) return $col;
+        }
+        return null;
+    };
+
+    $colOm = $find($header, 'om');
+    if (!$colOm) {
+        log_msg("importAltalanosIskolak: no om_azonosito column found");
+        return 0;
+    }
+
+    $colNev = $find($header, 'nev');
+    $colCim = $find($header, 'cim');
+    $colTelefon = $find($header, 'telefon');
+    $colEmail = $find($header, 'email');
+    $colIranyitoszam = $find($header, 'iranyit') ?? $find($header, 'zip');
+    $colTelepules = $find($header, 'telepules');
+
+    $stmt = $pdo->prepare(
+        "INSERT INTO altalanos_iskolak
+            (om_azonosito, nev, cim, telefonszam, email, iranyitoszam, telepules)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            nev = VALUES(nev),
+            cim = VALUES(cim),
+            telefonszam = VALUES(telefonszam),
+            email = VALUES(email),
+            iranyitoszam = VALUES(iranyitoszam),
+            telepules = VALUES(telepules)"
+    );
+
+    foreach ($rows as $i => $row) {
+        if ($i === 1) continue;
+
+        $cell = $sheet->getCell($colOm . $i);
+        $om_azonosito = trim($cell->getFormattedValue());
+        $om_azonosito = preg_replace('/\D/', '', $om_azonosito);
+
+        if (strlen($om_azonosito) !== 6) {
+            log_msg("Skipping row $i – invalid om_azonosito: $om_azonosito");
+            continue;
+        }
+
+        $nev = $colNev ? trim($row[$colNev] ?? '') : '';
+        $cim = $colCim ? trim($row[$colCim] ?? '') : '';
+        $telefonszam = $colTelefon ? trim($row[$colTelefon] ?? '') : '';
+        $email = $colEmail ? trim($row[$colEmail] ?? '') : '';
+        $iranyitoszam = $colIranyitoszam ? trim($row[$colIranyitoszam] ?? '') : '';
+        $telepules = $colTelepules ? trim($row[$colTelepules] ?? '') : '';
+
+        if ($telepules !== '') {
+            ensureTelepulesExists($pdo, $telepules, $iranyitoszam);
+        }
+
+        try {
+            $stmt->execute([
+                $om_azonosito,
+                $nev,
+                $cim,
+                $telefonszam ?: null,
+                $email ?: null,
+                $iranyitoszam ?: null,
+                $telepules ?: null
+            ]);
+            $count++;
+            log_msg("AltalanosIskolak: executed insert/update for om={$om_azonosito}, row={$i}");
+        } catch (Exception $e) {
+            log_msg("Error inserting altalanos_iskola row $i: " . $e->getMessage());
+        }
+    }
+
+    return $count;
 }

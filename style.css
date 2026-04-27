@@ -896,6 +896,65 @@ body.dark .result-card { background: linear-gradient(180deg, rgba(30,41,59,0.9),
     background: var(--bg);
 }
 
+/* Schools list table styling */
+.schools-list {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.schools-list table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 1000px;
+}
+
+.schools-list th,
+.schools-list td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.schools-list th {
+    background: var(--bg);
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.schools-list td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.schools-list tbody tr:hover {
+    background: var(--bg);
+}
+
+/* Main navigation */
+.main-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 10px;
+}
+
+.action-buttons {
+    margin-bottom: 20px;
+}
+
 .edit-form {
     background: var(--card-bg);
     padding: 30px;

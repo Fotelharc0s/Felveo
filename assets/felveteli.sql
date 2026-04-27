@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2026. Feb 19. 12:04
+-- Létrehozás ideje: 2026. Ápr 27. 09:43
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -202,9 +202,9 @@ CREATE TABLE `szemelyek` (
 --
 
 INSERT INTO `szemelyek` (`oktatasi_azonosito`, `nev`, `szuletesi_ido`, `alt_iskola_om`, `lakcim`, `anyja_neve`, `email`, `jelszo_hash`, `is_placeholder`, `telepules`) VALUES
-('12345678901', 'Nagy Anna', '2006-03-05', NULL, 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'anna.nagy@example.com', '', 0, 'Debrecen'),
-('72770184806', 'Kovács János', '2005-05-12', NULL, '3780 Edelény xy utca 12', 'Kovácsné', 'kovacs.janos@example.com', '', 0, 'Edelény'),
-('98765432109', 'Horváth Péter', '2004-11-20', NULL, '3770 Sajószentpéter xyz utca 11', 'Horváthné', 'peter.horvath@example.com', '', 0, 'Sajószentpéter');
+('12345678901', 'Nagy Anna', '2006-03-05', '034500', 'Debrecen, Béke út 10.', 'Nagy Erzsébet', 'anna.nagy@example.com', '', 0, 'Debrecen'),
+('72770184806', 'Kovács János', '2005-05-12', '031200', '3780 Edelény xy utca 12', 'Kovácsné', 'kovacs.janos@example.com', '', 0, 'Edelény'),
+('98765432109', 'Horváth Péter', '2004-11-20', '050400', '3770 Sajószentpéter xyz utca 11', 'Horváthné', 'peter.horvath@example.com', '', 0, 'Sajószentpéter');
 
 -- --------------------------------------------------------
 
@@ -258,6 +258,15 @@ CREATE TABLE `telepulesek` (
   `iranyitoszam` char(4) NOT NULL,
   `nev` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `telepulesek`
+--
+
+INSERT INTO `telepulesek` (`id`, `iranyitoszam`, `nev`) VALUES
+(1, '3770', 'Sajószentpéter'),
+(2, '3780', 'Edelény'),
+(3, '4000', 'Debrecen');
 
 --
 -- Indexek a kiírt táblákhoz
@@ -392,7 +401,7 @@ ALTER TABLE `targyak`
 -- AUTO_INCREMENT a táblához `telepulesek`
 --
 ALTER TABLE `telepulesek`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Megkötések a kiírt táblákhoz

@@ -21,36 +21,17 @@ Nyisd meg böngésződet és navigálj ide:
 http://localhost/Felveo-main/setup.php
 ```
 
-### 3. lépés: Adatbázis adatok megadása
+### 3. lépés: Telepítés kész!
+A varázsló automatikusan mindent beállít. Csak add meg az adatbázis adatokat és kattints a telepítésre.
 
-A varázsló megkéri az adatbázis elérési adatait:
-
-| Mező | Érték | Megjegyzés |
-|------|-------|-----------|
-| **📍 Adatbázis szerver** | `localhost` | Általában ez az alapértelmezett |
-| **👤 Felhasználónév** | `root` | XAMPP/Laragon alapértelmezése |
-| **🔑 Jelszó** | *(üres vagy a jelszó)* | Ha XAMPP-ben van, általában üres |
-| **🗄️ Adatbázis neve** | `felveteli` | Automatikusan létrehozódik |
-
-### 4. lépés: Telepítés futtatása
-
-Kattints az "Adatbázis telepítése" gombra. A varázsló automatikusan:
-- Létrehozza a `felveteli` adatbázist (ha szükséges)
-- Importálja az összes szükséges táblát
-- Frissítéseket alkalmaz
-- Létrehozza a `config.php` fájlt
-
-### 5. lépés: Admin bejelentkezés
-
-A telepítés után az admin hitelesítő adatok:
+### 4. lépés: Admin bejelentkezés
 ```
 Felhasználónév: admin
 Jelszó: secret
 ```
+Bejelentkezés: `http://localhost/Felveo-main/admin_login.php`
 
 ⚠️ **FONTOS:** Első bejelentkezés után azonnal módosítsd a jelszót!
-
-Bejelentkezés: `http://localhost/Felveo-main/admin_login.php`
 
 ---
 
