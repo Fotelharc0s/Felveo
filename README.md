@@ -153,7 +153,7 @@ Svelta Levente
 
 ## Utolsó frissítés
 
-2026-03-02
+2026-05-05
 
 > **Végleges verzió:** A helyesírás ellenőrzése és segédfájlok frissítve; projekt kifutásra kész.
 
